@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Restaurant gastronomique élégant - Cuisine raffinée et authentique">
     <title>Le Jardin des Saveurs - Restaurant Gastronomique</title>
+    
+    <!-- EmailJS CDN -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            emailjs.init("9cbH8LkCwz3dX1YKP"); // Votre Public Key
+        })();
+    </script>
+    
     <style>
         /* ===================================
            VARIABLES CSS - PERSONNALISATION FACILE
@@ -216,9 +225,59 @@
             font-size: 1.1rem;
         }
 
-        /* Alternance de couleurs de fond */
         section:nth-child(even) {
             background: var(--light-bg);
+        }
+
+        /* ===================================
+           BANDEAU DÉFILANT D'IMAGES
+           =================================== */
+        .image-carousel {
+            width: 100%;
+            overflow: hidden;
+            background: var(--light-bg);
+            padding: 3rem 0;
+            position: relative;
+        }
+
+        .carousel-track {
+            display: flex;
+            animation: scroll 30s linear infinite;
+            width: fit-content;
+        }
+
+        .carousel-item {
+            flex-shrink: 0;
+            width: 400px;
+            height: 300px;
+            margin: 0 1rem;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .carousel-item:hover img {
+            transform: scale(1.05);
+        }
+
+        @keyframes scroll {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .image-carousel:hover .carousel-track {
+            animation-play-state: paused;
         }
 
         /* ===================================
@@ -297,7 +356,6 @@
 
         /* ===================================
            MENU
-           Modifier les catégories et plats ici
            =================================== */
         .menu-categories {
             display: flex;
@@ -360,7 +418,6 @@
             line-height: 1.6;
         }
 
-        /* QR Code Section */
         .qr-code-section {
             text-align: center;
             margin-top: 3rem;
@@ -433,6 +490,7 @@
             border-radius: 5px;
             margin-top: 1rem;
             text-align: center;
+            font-weight: 500;
         }
 
         /* ===================================
@@ -844,65 +902,9 @@
         .mt-2 {
             margin-top: 2rem;
         }
-
-        /* ===================================
-           BANDEAU DÉFILANT D'IMAGES
-           =================================== */
-        .image-carousel {
-            width: 100%;
-            overflow: hidden;
-            background: var(--light-bg);
-            padding: 3rem 0;
-            position: relative;
-        }
-
-        .carousel-track {
-            display: flex;
-            animation: scroll 30s linear infinite;
-            width: fit-content;
-        }
-
-        .carousel-item {
-            flex-shrink: 0;
-            width: 400px;
-            height: 300px;
-            margin: 0 1rem;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        }
-
-        .carousel-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s;
-        }
-
-        .carousel-item:hover img {
-            transform: scale(1.05);
-        }
-
-        @keyframes scroll {
-            0% {
-                transform: translateX(0);
-            }
-            100% {
-                transform: translateX(-50%);
-            }
-        }
-
-        /* Pause au survol */
-        .image-carousel:hover .carousel-track {
-            animation-play-state: paused;
-        }
     </style>
 </head>
 <body>
-    <!-- ===================================
-         NAVIGATION
-         Modifier les liens du menu ici
-         =================================== -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">Le Jardin des Saveurs</div>
@@ -923,10 +925,6 @@
         </div>
     </nav>
 
-    <!-- ===================================
-         HERO SECTION
-         Modifier le titre, slogan et image de fond
-         =================================== -->
     <section class="hero" id="accueil">
         <div class="hero-content">
             <h1>Le Jardin des Saveurs</h1>
@@ -938,13 +936,8 @@
         </div>
     </section>
 
-    <!-- ===================================
-         BANDEAU DÉFILANT D'IMAGES
-         Modifier les images ici
-         =================================== -->
     <div class="image-carousel">
         <div class="carousel-track">
-            <!-- Premier set d'images -->
             <div class="carousel-item">
                 <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800" alt="Plat gastronomique">
             </div>
@@ -963,10 +956,8 @@
             <div class="carousel-item">
                 <img src="https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=800" alt="Bar et cocktails">
             </div>
-            
-            <!-- Duplication pour effet infini -->
             <div class="carousel-item">
-                <img src="https://images.unsplash.com/photo-504674900247-0877df9cc836?w=800" alt="Plat gastronomique">
+                <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800" alt="Plat gastronomique">
             </div>
             <div class="carousel-item">
                 <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800" alt="Cuisine du chef">
@@ -986,10 +977,6 @@
         </div>
     </div>
 
-    <!-- ===================================
-         HISTOIRE DU RESTAURANT
-         Modifier le texte et l'image
-         =================================== -->
     <section id="histoire">
         <div class="container">
             <h2 class="section-title">Notre Histoire</h2>
@@ -1015,10 +1002,6 @@
         </div>
     </section>
 
-    <!-- ===================================
-         PRÉSENTATION
-         Modifier les caractéristiques
-         =================================== -->
     <section id="presentation">
         <div class="container">
             <h2 class="section-title">L'Expérience Le Jardin des Saveurs</h2>
@@ -1052,10 +1035,6 @@
         </div>
     </section>
 
-    <!-- ===================================
-         MENU
-         Modifier les catégories et plats
-         =================================== -->
     <section id="menu">
         <div class="container">
             <h2 class="section-title">Notre Menu</h2>
@@ -1068,11 +1047,8 @@
                 <button class="menu-category-btn" data-category="specialites">Spécialités</button>
             </div>
             
-            <div class="menu-items" id="menuItems">
-                <!-- Les plats seront affichés ici dynamiquement -->
-            </div>
+            <div class="menu-items" id="menuItems"></div>
 
-            <!-- QR CODE SECTION -->
             <div class="qr-code-section">
                 <h3>Consultez notre menu via QR Code</h3>
                 <p>Scannez ce code pour accéder au menu complet sur votre téléphone</p>
@@ -1103,17 +1079,12 @@
                     </svg>
                 </div>
                 <p style="margin-top: 1rem; color: #444; font-size: 0.95rem; font-weight: 500;">
-                    <!-- INSTRUCTION: Remplacer par l'URL réelle du menu -->
                     URL: https://votre-site.com/menu
                 </p>
             </div>
         </div>
     </section>
 
-    <!-- ===================================
-         RÉSERVATION
-         Le formulaire envoie les données
-         =================================== -->
     <section id="reservation">
         <div class="container">
             <h2 class="section-title">Réserver une Table</h2>
@@ -1173,17 +1144,11 @@
                 
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Confirmer la réservation</button>
                 
-                <div class="success-message" id="successMessage">
-                    ✓ Votre réservation a été envoyée avec succès ! Nous vous confirmerons par email.
-                </div>
+                <div class="success-message" id="successMessage"></div>
             </form>
         </div>
     </section>
 
-    <!-- ===================================
-         ÉVÉNEMENTS
-         Modifier les événements
-         =================================== -->
     <section id="evenements">
         <div class="container">
             <h2 class="section-title">Nos Événements</h2>
@@ -1229,10 +1194,6 @@
         </div>
     </section>
 
-    <!-- ===================================
-         CALENDRIER FERMETURE
-         Modifier les dates de fermeture
-         =================================== -->
     <section id="calendrier">
         <div class="container">
             <h2 class="section-title">Calendrier & Horaires</h2>
@@ -1277,10 +1238,6 @@
         </div>
     </section>
 
-    <!-- ===================================
-         ÉQUIPE
-         Modifier les membres de l'équipe
-         =================================== -->
     <section id="equipe">
         <div class="container">
             <h2 class="section-title">Notre Équipe</h2>
@@ -1318,10 +1275,6 @@
         </div>
     </section>
 
-    <!-- ===================================
-         INFORMATIONS PRATIQUES
-         Modifier adresse, téléphone, email
-         =================================== -->
     <section id="contact">
         <div class="container">
             <h2 class="section-title">Nous Trouver</h2>
@@ -1363,16 +1316,12 @@
                 </div>
                 
                 <div class="map-container">
-                    <!-- INSTRUCTION: Remplacer par votre iframe Google Maps -->
                     <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2624.9914406081493!2d2.3352765!3d48.8606111!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e66e2964e34e2d%3A0x8ddca9ee380ef7e0!2sLouvre%20Museum!5e0!3m2!1sen!2sfr!4v1234567890" allowfullscreen="" loading="lazy"></iframe>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ===================================
-         ACCESSIBILITÉ
-         =================================== -->
     <section id="accessibilite">
         <div class="container">
             <h2 class="section-title">Accessibilité</h2>
@@ -1414,17 +1363,12 @@
         </div>
     </section>
 
-    <!-- ===================================
-         RÉSEAUX SOCIAUX
-         Modifier les liens
-         =================================== -->
     <section class="social-section">
         <div class="container">
             <h2 class="section-title">Suivez-nous</h2>
             <p class="section-subtitle">Rejoignez notre communauté et découvrez nos actualités</p>
             
             <div class="social-links">
-                <!-- INSTRUCTION: Remplacer # par vos vrais liens -->
                 <a href="#" class="social-link" target="_blank" aria-label="Instagram">📷</a>
                 <a href="#" class="social-link" target="_blank" aria-label="Facebook">👍</a>
                 <a href="#" class="social-link" target="_blank" aria-label="TikTok">🎵</a>
@@ -1433,9 +1377,6 @@
         </div>
     </section>
 
-    <!-- ===================================
-         FOOTER
-         =================================== -->
     <footer>
         <div class="footer-content">
             <div class="footer-section">
@@ -1478,109 +1419,36 @@
         </div>
     </footer>
 
-    <!-- ===================================
-         JAVASCRIPT
-         =================================== -->
     <script>
-        // ===================================
-        // DONNÉES DU MENU
-        // Modifier les plats ici
-        // ===================================
         const menuData = {
             entrees: [
-                {
-                    nom: "Foie Gras Maison",
-                    prix: "24€",
-                    description: "Mi-cuit, chutney de figues et pain brioché toasté"
-                },
-                {
-                    nom: "Tartare de Saumon",
-                    prix: "18€",
-                    description: "Saumon frais, avocat, citron vert et coriandre"
-                },
-                {
-                    nom: "Velouté de Saison",
-                    prix: "12€",
-                    description: "Crème légère et croûtons maison"
-                },
-                {
-                    nom: "Salade de Chèvre Chaud",
-                    prix: "16€",
-                    description: "Mesclun, tomates confites, miel et noix"
-                }
+                { nom: "Foie Gras Maison", prix: "24€", description: "Mi-cuit, chutney de figues et pain brioché toasté" },
+                { nom: "Tartare de Saumon", prix: "18€", description: "Saumon frais, avocat, citron vert et coriandre" },
+                { nom: "Velouté de Saison", prix: "12€", description: "Crème légère et croûtons maison" },
+                { nom: "Salade de Chèvre Chaud", prix: "16€", description: "Mesclun, tomates confites, miel et noix" }
             ],
             plats: [
-                {
-                    nom: "Filet de Bœuf Rossini",
-                    prix: "42€",
-                    description: "Filet de bœuf, foie gras poêlé, sauce truffe et légumes du marché"
-                },
-                {
-                    nom: "Saint-Jacques Rôties",
-                    prix: "38€",
-                    description: "Noix de Saint-Jacques, purée de céleri et émulsion citron"
-                },
-                {
-                    nom: "Pavé de Saumon",
-                    prix: "32€",
-                    description: "Saumon sauvage, risotto crémeux aux asperges"
-                },
-                {
-                    nom: "Magret de Canard",
-                    prix: "34€",
-                    description: "Magret rôti, sauce aux fruits rouges et gratin dauphinois"
-                }
+                { nom: "Filet de Bœuf Rossini", prix: "42€", description: "Filet de bœuf, foie gras poêlé, sauce truffe et légumes du marché" },
+                { nom: "Saint-Jacques Rôties", prix: "38€", description: "Noix de Saint-Jacques, purée de céleri et émulsion citron" },
+                { nom: "Pavé de Saumon", prix: "32€", description: "Saumon sauvage, risotto crémeux aux asperges" },
+                { nom: "Magret de Canard", prix: "34€", description: "Magret rôti, sauce aux fruits rouges et gratin dauphinois" }
             ],
             desserts: [
-                {
-                    nom: "Soufflé au Chocolat",
-                    prix: "14€",
-                    description: "Servi tiède avec glace vanille Bourbon"
-                },
-                {
-                    nom: "Tarte Tatin",
-                    prix: "12€",
-                    description: "Pommes caramélisées et crème fraîche épaisse"
-                },
-                {
-                    nom: "Fondant au Chocolat",
-                    prix: "13€",
-                    description: "Cœur coulant, glace pistache maison"
-                },
-                {
-                    nom: "Assiette de Fromages",
-                    prix: "15€",
-                    description: "Sélection de fromages affinés et confiture maison"
-                }
+                { nom: "Soufflé au Chocolat", prix: "14€", description: "Servi tiède avec glace vanille Bourbon" },
+                { nom: "Tarte Tatin", prix: "12€", description: "Pommes caramélisées et crème fraîche épaisse" },
+                { nom: "Fondant au Chocolat", prix: "13€", description: "Cœur coulant, glace pistache maison" },
+                { nom: "Assiette de Fromages", prix: "15€", description: "Sélection de fromages affinés et confiture maison" }
             ],
             specialites: [
-                {
-                    nom: "Homard Breton",
-                    prix: "56€",
-                    description: "Homard entier grillé, beurre d'herbes et légumes de saison"
-                },
-                {
-                    nom: "Tournedos Rossini",
-                    prix: "48€",
-                    description: "Filet mignon, foie gras, truffe noire et jus corsé"
-                },
-                {
-                    nom: "Plateau de Fruits de Mer",
-                    prix: "65€",
-                    description: "Pour 2 personnes - Huîtres, langoustines, bulots, crevettes"
-                }
+                { nom: "Homard Breton", prix: "56€", description: "Homard entier grillé, beurre d'herbes et légumes de saison" },
+                { nom: "Tournedos Rossini", prix: "48€", description: "Filet mignon, foie gras, truffe noire et jus corsé" },
+                { nom: "Plateau de Fruits de Mer", prix: "65€", description: "Pour 2 personnes - Huîtres, langoustines, bulots, crevettes" }
             ]
         };
-
-        // ===================================
-        // AFFICHAGE DU MENU
-        // ===================================
-        let currentCategory = 'entrees';
 
         function displayMenu(category) {
             const menuItems = document.getElementById('menuItems');
             menuItems.innerHTML = '';
-            
             menuData[category].forEach(item => {
                 const menuItem = document.createElement('div');
                 menuItem.className = 'menu-item';
@@ -1595,50 +1463,29 @@
             });
         }
 
-        // ===================================
-        // GESTION DES CATÉGORIES DU MENU
-        // ===================================
         document.querySelectorAll('.menu-category-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.menu-category-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                const category = btn.getAttribute('data-category');
-                displayMenu(category);
+                displayMenu(btn.getAttribute('data-category'));
             });
         });
 
-        // ===================================
-        // NAVIGATION MOBILE
-        // ===================================
         const hamburger = document.querySelector('.hamburger');
         const navMenu = document.querySelector('.nav-menu');
-
-        hamburger.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-        });
-
-        // Fermer le menu au clic sur un lien
+        hamburger.addEventListener('click', () => navMenu.classList.toggle('active'));
         document.querySelectorAll('.nav-menu a').forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-            });
+            link.addEventListener('click', () => navMenu.classList.remove('active'));
         });
 
-        // ===================================
-        // EFFET SCROLL NAVBAR
-        // ===================================
         window.addEventListener('scroll', () => {
             const navbar = document.querySelector('.navbar');
-            if (window.scrollY > 100) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
+            if (window.scrollY > 100) navbar.classList.add('scrolled');
+            else navbar.classList.remove('scrolled');
         });
 
         // ===================================
-        // FORMULAIRE DE RÉSERVATION
-        // Simulation d'envoi email au patron
+        // FORMULAIRE DE RÉSERVATION - EmailJS
         // ===================================
         const reservationForm = document.getElementById('reservationForm');
         const successMessage = document.getElementById('successMessage');
@@ -1646,71 +1493,61 @@
         reservationForm.addEventListener('submit', (e) => {
             e.preventDefault();
             
-            // Récupération des données
-            const formData = {
+            const submitBtn = reservationForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '⏳ Envoi en cours...';
+            submitBtn.disabled = true;
+            
+            const templateParams = {
+                to_email: 'stephendartus@gmail.com',
                 nom: document.getElementById('nom').value,
                 email: document.getElementById('email').value,
                 date: document.getElementById('date').value,
                 heure: document.getElementById('heure').value,
                 personnes: document.getElementById('personnes').value,
-                telephone: document.getElementById('telephone').value,
-                message: document.getElementById('message').value
+                telephone: document.getElementById('telephone').value || 'Non renseigné',
+                message: document.getElementById('message').value || 'Aucun message'
             };
             
-            // SIMULATION D'ENVOI EMAIL
-            // Dans une vraie application, utilisez un backend ou service comme EmailJS
-            console.log('📧 EMAIL ENVOYÉ AU PATRON:', formData);
-            
-            // Construction du mailto (alternative simple)
-            const mailtoLink = `mailto:contact@jardindessaveurs.fr?subject=Nouvelle réservation - ${formData.nom}&body=
-Nouvelle réservation reçue:%0D%0A%0D%0A
-Nom: ${formData.nom}%0D%0A
-Email: ${formData.email}%0D%0A
-Date: ${formData.date}%0D%0A
-Heure: ${formData.heure}%0D%0A
-Nombre de personnes: ${formData.personnes}%0D%0A
-Téléphone: ${formData.telephone}%0D%0A
-Message: ${formData.message}
-            `;
-            
-            // Décommenter pour ouvrir le client email
-            // window.location.href = mailtoLink;
-            
-            // Affichage message de succès
-            successMessage.style.display = 'block';
-            reservationForm.reset();
-            
-            // Masquer le message après 5 secondes
-            setTimeout(() => {
-                successMessage.style.display = 'none';
-            }, 5000);
+            emailjs.send('service_uqqrt7m', 'template_0e9bc1m', templateParams)
+                .then(function(response) {
+                    console.log('✅ Email envoyé avec succès !', response.status, response.text);
+                    successMessage.style.display = 'block';
+                    successMessage.style.background = '#d4edda';
+                    successMessage.style.color = '#155724';
+                    successMessage.textContent = '✓ Votre réservation a été envoyée avec succès ! Nous vous confirmerons par email.';
+                    reservationForm.reset();
+                    setTimeout(() => { successMessage.style.display = 'none'; }, 5000);
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }, function(error) {
+                    console.error('❌ Erreur:', error);
+                    successMessage.style.display = 'block';
+                    successMessage.style.background = '#f8d7da';
+                    successMessage.style.color = '#721c24';
+                    successMessage.textContent = '❌ Une erreur est survenue. Veuillez réessayer.';
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                    setTimeout(() => { 
+                        successMessage.style.display = 'none';
+                        successMessage.style.background = '#d4edda';
+                        successMessage.style.color = '#155724';
+                    }, 5000);
+                });
         });
 
-        // ===================================
-        // INITIALISATION
-        // ===================================
         document.addEventListener('DOMContentLoaded', () => {
             displayMenu('entrees');
-            
-            // Définir la date minimum pour le formulaire (aujourd'hui)
             const dateInput = document.getElementById('date');
             const today = new Date().toISOString().split('T')[0];
             dateInput.setAttribute('min', today);
         });
 
-        // ===================================
-        // SMOOTH SCROLL
-        // ===================================
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         });
     </script>
