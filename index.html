@@ -1828,6 +1828,7 @@ Message: ${formData.message}
         const chatInput = document.getElementById("chat-input");
         const chatMessages = document.getElementById("chat-messages");
 
+        if (toggle && chatbot && chatInput && chatMessages) {
         // Toggle du chatbot
         toggle.onclick = () => {
             if (chatbot.style.display === "flex") {
@@ -1844,6 +1845,7 @@ Message: ${formData.message}
                 }
             }
         };
+        }
 
         // Gestion des messages
         chatInput.addEventListener("keydown", async (e) => {
