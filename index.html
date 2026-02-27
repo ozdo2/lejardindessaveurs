@@ -1770,89 +1770,65 @@
         // ===================================
         // FORMULAIRE DE RÉSERVATION avec EmailJS
         // ===================================
-        const reservationForm = document.getElementById('reservationForm');
-        const successMessage = document.getElementById('successMessage');
+// Configuration Supabase
+const SUPABASE_URL = 'VOTRE_PROJECT_URL';
+const SUPABASE_KEY = 'VOTRE_ANON_KEY';
 
-        reservationForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            // Désactiver le bouton pendant l'envoi
-            const submitBtn = reservationForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Envoi en cours...';
-            submitBtn.disabled = true;
-            
-            // Récupération des données du formulaire
-            const formData = {
-                nom: document.getElementById('nom').value,
-                email: document.getElementById('email').value,
-                date: document.getElementById('date').value,
-                heure: document.getElementById('heure').value,
-                personnes: document.getElementById('personnes').value,
-                telephone: document.getElementById('telephone').value || 'Non renseigné',
-                message: document.getElementById('message').value || 'Aucun message'
-            };
-            
-            // Préparation des paramètres pour EmailJS
-            const templateParams = {
-                to_email: 'l41205761@gmail.com',
-                nom: formData.nom,
-                email: formData.email,
-                date: formData.date,
-                heure: formData.heure,
-                personnes: formData.personnes,
-                telephone: formData.telephone,
-                message: formData.message
-            };
-            
-            // Envoi via EmailJS
-            emailjs.send(
-                'service_uqqrt7m',      // Service ID
-                'template_0e9bc1m',     // Template ID
-                templateParams
-            )
-            .then(function(response) {
-                console.log('✅ Email envoyé avec succès !', response.status, response.text);
-                
-                // Afficher le message de succès
-                successMessage.style.display = 'block';
-                successMessage.style.background = '#d4edda';
-                successMessage.style.color = '#155724';
-                successMessage.textContent = '✓ Votre réservation a été envoyée avec succès ! Nous vous confirmerons par email.';
-                
-                // Réinitialiser le formulaire
-                reservationForm.reset();
-                
-                // Masquer le message après 5 secondes
-                setTimeout(() => {
-                    successMessage.style.display = 'none';
-                }, 5000);
-                
-                // Réactiver le bouton
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-                
-            })
-            .catch(function(error) {
-                console.error('❌ Erreur lors de l\'envoi :', error);
-                
-                // Afficher un message d'erreur
-                successMessage.style.display = 'block';
-                successMessage.style.background = '#f8d7da';
-                successMessage.style.color = '#721c24';
-                successMessage.textContent = '❌ Une erreur est survenue. Veuillez réessayer ou nous contacter au +33 1 42 34 56 78';
-                
-                // Réactiver le bouton
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-                
-                setTimeout(() => {
-                    successMessage.style.display = 'none';
-                    successMessage.style.background = '#d4edda';
-                    successMessage.style.color = '#155724';
-                }, 5000);
-            });
+reservationForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = reservationForm.querySelector('button[type="submit"]');
+    submitBtn.textContent = 'Envoi en cours...';
+    submitBtn.disabled = true;
+    
+    const formData = {
+        nom: document.getElementById('nom').value,
+        email: document.getElementById('email').value,
+        date: document.getElementById('date').value,
+        heure: document.getElementById('heure').value,
+        personnes: document.getElementById('personnes').value,
+        telephone: document.getElementById('telephone').value || 'Non renseigné',
+        message: document.getElementById('message').value || 'Aucun message',
+        statut: 'en_attente'
+    };
+    
+    try {
+        // 1. Sauvegarder dans Supabase
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/reservations`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+            },
+            body: JSON.stringify(formData)
         });
+        
+        if (!response.ok) throw new Error('Erreur base de données');
+        
+        // 2. Envoyer l'email au restaurateur (EmailJS)
+        await emailjs.send('service_uqqrt7m', 'template_0e9bc1m', {
+            to_email: 'l41205761@gmail.com',
+            ...formData
+        });
+        
+        // 3. Succès !
+        successMessage.style.display = 'block';
+        successMessage.textContent = '✓ Réservation enregistrée ! Nous vous confirmerons rapidement.';
+        reservationForm.reset();
+        
+    } catch (error) {
+        console.error('Erreur:', error);
+        successMessage.style.display = 'block';
+        successMessage.style.background = '#f8d7da';
+        successMessage.style.color = '#721c24';
+        successMessage.textContent = '❌ Erreur. Contactez-nous au +33 1 42 34 56 78';
+    }
+    
+    submitBtn.textContent = 'Confirmer la réservation';
+    submitBtn.disabled = false;
+});
 
         // ===================================
         // INITIALISATION
