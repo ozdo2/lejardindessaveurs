@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmation Réservation - Le Jardin des Saveurs</title>
+    
+    <!-- EmailJS Script -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+        (function(){
+            emailjs.init("VOTRE_PUBLIC_KEY"); // ← REMPLACEZ par votre Public Key
+        })();
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c5f2d, #4a9d4e);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .status-icon {
+            font-size: 80px;
+            text-align: center;
+            margin-bottom: 20px;
+            animation: bounce 1s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .message {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .message h2 {
+            color: #2c5f2d;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        .message p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .reservation-details {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2c5f2d;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #2c5f2d;
+        }
+        
+        .detail-value {
+            color: #333;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2c5f2d;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: #2c5f2d;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            background: #4a9d4e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(44,95,45,0.3);
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍽️ Le Jardin des Saveurs</h1>
+            <p>Gestion des réservations</p>
+        </div>
+        
+        <div class="content" id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <h2>Traitement en cours...</h2>
+                <p>Envoi de la confirmation au client</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Récupérer les paramètres de l'URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const action = urlParams.get('action');
+        const nom = decodeURIComponent(urlParams.get('nom') || '');
+        const email = decodeURIComponent(urlParams.get('email') || '');
+        const date = urlParams.get('date') || '';
+        const heure = urlParams.get('heure') || '';
+        const personnes = urlParams.get('personnes') || '';
+        const telephone = decodeURIComponent(urlParams.get('telephone') || 'Non renseigné');
+
+        // Fonction pour afficher les détails de la réservation
+        function showReservationDetails() {
+            return `
+                <div class="reservation-details">
+                    <div class="detail-row">
+                        <span class="detail-label">👤 Client :</span>
+                        <span class="detail-value">${nom}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">📧 Email :</span>
+                        <span class="detail-value">${email}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">📞 Téléphone :</span>
+                        <span class="detail-value">${telephone}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">📅 Date :</span>
+                        <span class="detail-value">${date}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">🕐 Heure :</span>
+                        <span class="detail-value">${heure}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">👥 Personnes :</span>
+                        <span class="detail-value">${personnes}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Vérifier si tous les paramètres sont présents
+        if (!action || !nom || !email || !date || !heure || !personnes) {
+            document.getElementById('content').innerHTML = `
+                <div class="status-icon">❌</div>
+                <div class="message">
+                    <h2>Paramètres manquants</h2>
+                    <p>Le lien semble incomplet. Veuillez utiliser le lien depuis l'email reçu.</p>
+                </div>
+                <div class="center">
+                    <a href="/" class="btn">Retour au site</a>
+                </div>
+            `;
+        } else if (action === 'accept') {
+            // Traiter l'acceptation
+            emailjs.send(
+                'service_uqqrt7m',      // Service ID
+                'template_ng37e8x',     // Template ID confirmation client
+                {
+                    to_email: email,
+                    nom: nom,
+                    email: email,
+                    date: date,
+                    heure: heure,
+                    personnes: personnes,
+                    telephone: telephone
+                }
+            )
+            .then(function(response) {
+                console.log('✅ Email de confirmation envoyé !', response.status);
+                
+                document.getElementById('content').innerHTML = `
+                    <div class="status-icon">✅</div>
+                    <div class="message">
+                        <h2>Réservation Confirmée !</h2>
+                        <p>Un email de confirmation a été envoyé à <strong>${email}</strong></p>
+                    </div>
+                    
+                    ${showReservationDetails()}
+                    
+                    <div class="success">
+                        <strong>✓ Confirmation envoyée avec succès</strong><br>
+                        Le client a reçu tous les détails de sa réservation.
+                    </div>
+                    
+                    <div class="center">
+                        <a href="/" class="btn">Retour au site</a>
+                    </div>
+                `;
+            })
+            .catch(function(error) {
+                console.error('❌ Erreur:', error);
+                
+                document.getElementById('content').innerHTML = `
+                    <div class="status-icon">⚠️</div>
+                    <div class="message">
+                        <h2>Erreur d'envoi</h2>
+                        <p>Impossible d'envoyer l'email de confirmation automatiquement.</p>
+                    </div>
+                    
+                    ${showReservationDetails()}
+                    
+                    <div class="error">
+                        <strong>Veuillez contacter le client manuellement :</strong><br>
+                        📧 Email : ${email}<br>
+                        📞 Téléphone : ${telephone}
+                    </div>
+                    
+                    <div class="center">
+                        <a href="mailto:${email}?subject=Réservation confirmée - Le Jardin des Saveurs&body=Bonjour ${nom},%0D%0A%0D%0AVotre réservation est confirmée pour le ${date} à ${heure} pour ${personnes} personne(s).%0D%0A%0D%0AÀ bientôt !" class="btn">Envoyer un email manuel</a>
+                        <a href="/" class="btn">Retour au site</a>
+                    </div>
+                `;
+            });
+        } else {
+            document.getElementById('content').innerHTML = `
+                <div class="status-icon">❓</div>
+                <div class="message">
+                    <h2>Action inconnue</h2>
+                    <p>L'action demandée n'est pas reconnue.</p>
+                </div>
+                <div class="center">
+                    <a href="/" class="btn">Retour au site</a>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
