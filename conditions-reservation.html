@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, follow">
+    <title>Conditions de réservation — [NOM_RESTAURANT]</title>
+    <style>
+/* ═══════════════════════════════════════════════════
+   LEGAL.CSS — Styles partagés pour les pages légales
+   Cohérent avec le thème Le Jardin des Saveurs
+   ═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap');
+
+:root {
+    --primary:   #2c5f2d;
+    --accent:    #d4af37;
+    --light:     #f8f6f1;
+    --dark:      #1a1a1a;
+    --text:      #333;
+    --muted:     #666;
+    --border:    #e0d8cc;
+    --white:     #ffffff;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    color: var(--text);
+    background: var(--white);
+    line-height: 1.75;
+}
+
+/* ── NAVBAR ── */
+.legal-nav {
+    position: sticky;
+    top: 0;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.legal-nav .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+}
+
+.legal-nav .back-link {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: color 0.2s;
+}
+
+.legal-nav .back-link:hover { color: var(--primary); }
+
+/* ── HERO BAND ── */
+.legal-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, #1e4620 100%);
+    color: var(--white);
+    padding: 4rem 2rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.legal-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.legal-hero .badge {
+    display: inline-block;
+    background: rgba(212,175,55,0.2);
+    border: 1px solid rgba(212,175,55,0.4);
+    color: var(--accent);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+}
+
+.legal-hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 0.75rem;
+}
+
+.legal-hero .update-date {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.6);
+    font-style: italic;
+}
+
+/* ── LAYOUT ── */
+.legal-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 0;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    align-items: start;
+}
+
+/* ── SIDEBAR SOMMAIRE ── */
+.legal-sidebar {
+    position: sticky;
+    top: 80px;
+    padding-right: 2rem;
+    border-right: 1px solid var(--border);
+}
+
+.legal-sidebar h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 1rem;
+}
+
+.legal-sidebar nav a {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 0.4rem 0 0.4rem 0.75rem;
+    border-left: 2px solid transparent;
+    transition: all 0.2s;
+    margin-bottom: 0.2rem;
+}
+
+.legal-sidebar nav a:hover,
+.legal-sidebar nav a.active {
+    color: var(--primary);
+    border-left-color: var(--primary);
+}
+
+/* ── CONTENT ── */
+.legal-content {
+    padding-left: 3rem;
+}
+
+.legal-section {
+    margin-bottom: 3rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.4s ease both;
+}
+
+.legal-section:last-child {
+    border-bottom: none;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.legal-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--accent);
+    display: inline-block;
+}
+
+.legal-section h3 {
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--dark);
+    margin: 1.5rem 0 0.5rem;
+}
+
+.legal-section p {
+    color: #444;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.legal-section ul, .legal-section ol {
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.legal-section li {
+    font-size: 0.95rem;
+    color: #444;
+    margin-bottom: 0.3rem;
+}
+
+/* Info card */
+.info-card {
+    background: var(--light);
+    border-left: 3px solid var(--primary);
+    border-radius: 0 6px 6px 0;
+    padding: 1.25rem 1.5rem;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+}
+
+.info-card strong { color: var(--primary); }
+
+/* Warning card */
+.warn-card {
+    background: #fff8e6;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: 1.25rem 1.5rem;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+}
+
+/* Placeholder tag */
+.placeholder {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px dashed #ffc107;
+    border-radius: 3px;
+    padding: 0 4px;
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+/* ── FOOTER LEGAL ── */
+.legal-footer-bar {
+    background: var(--dark);
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 1.5rem 2rem;
+    font-size: 0.82rem;
+}
+
+.legal-footer-bar a {
+    color: var(--accent);
+    text-decoration: none;
+    margin: 0 0.5rem;
+}
+
+.legal-footer-bar a:hover { text-decoration: underline; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+    .legal-layout {
+        grid-template-columns: 1fr;
+        padding: 2rem 1rem;
+    }
+    .legal-sidebar {
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding-right: 0;
+        padding-bottom: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .legal-content { padding-left: 0; }
+    .legal-sidebar nav { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .legal-sidebar nav a { border-left: none; border-bottom: 2px solid transparent; padding: 0.3rem 0.6rem; }
+    .legal-sidebar nav a:hover, .legal-sidebar nav a.active { border-left-color: transparent; border-bottom-color: var(--primary); }
+}
+
+/* ══════════════════════════════════════════════════════
+   COOKIE BANNER
+   ══════════════════════════════════════════════════════ */
+#cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: rgba(26,26,26,0.97);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    border-top: 2px solid var(--primary);
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.4);
+}
+
+#cookie-banner.visible { transform: translateY(0); }
+
+#cookie-banner .cookie-text {
+    flex: 1;
+    min-width: 250px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.85);
+}
+
+#cookie-banner .cookie-text strong {
+    color: #fff;
+    font-weight: 500;
+}
+
+#cookie-banner .cookie-text a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+#cookie-banner .cookie-text a:hover { text-decoration: underline; }
+
+#cookie-banner .cookie-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.cookie-btn {
+    padding: 0.6rem 1.5rem;
+    border-radius: 4px;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+}
+
+.cookie-btn-accept {
+    background: var(--primary);
+    color: #fff;
+}
+
+.cookie-btn-accept:hover { background: #3a7a3b; transform: translateY(-1px); }
+
+.cookie-btn-refuse {
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.25);
+}
+
+.cookie-btn-refuse:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+/* ── FOOTER LINKS in index.html (patch) ── */
+.footer-legal-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.footer-legal-links a {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.45);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-legal-links a:hover { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+
+<!-- ── NAVBAR ── -->
+<header class="legal-nav">
+    <a href="/" class="logo">[NOM_RESTAURANT]</a>
+    <a href="/" class="back-link">← Retour au site</a>
+</header>
+
+<!-- ── HERO ── -->
+<div class="legal-hero">
+    <div class="badge">Règles & engagements</div>
+    <h1>Conditions de réservation</h1>
+    <p class="update-date">Dernière mise à jour : <span class="placeholder">[DATE_MAJ]</span></p>
+</div>
+
+<!-- ── LAYOUT ── -->
+<div class="legal-layout">
+
+    <!-- Sommaire -->
+    <aside class="legal-sidebar">
+        <h3>Sommaire</h3>
+        <nav>
+            <a href="#objet">Objet</a>
+            <a href="#reservation">Réservation en ligne</a>
+            <a href="#confirmation">Confirmation</a>
+            <a href="#annulation">Annulation</a>
+            <a href="#retard">Retard & absence</a>
+            <a href="#groupes">Groupes</a>
+            <a href="#allergies">Allergies</a>
+            <a href="#responsabilite-res">Responsabilité</a>
+            <a href="#contact-res">Contact</a>
+        </nav>
+    </aside>
+
+    <!-- Contenu -->
+    <main class="legal-content">
+
+        <div class="legal-section" id="objet">
+            <h2>Objet</h2>
+            <p>Les présentes conditions de réservation régissent les modalités de réservation d'une table au restaurant <span class="placeholder">[NOM_RESTAURANT]</span>, situé <span class="placeholder">[ADRESSE_COMPLETE]</span>.</p>
+            <p>Toute réservation effectuée via le formulaire en ligne implique l'acceptation pleine et entière des présentes conditions.</p>
+        </div>
+
+        <div class="legal-section" id="reservation">
+            <h2>Réservation en ligne</h2>
+            <p>Le formulaire de réservation disponible sur notre site permet de soumettre une demande de table pour une date, une heure et un nombre de couverts précis.</p>
+
+            <div class="warn-card">
+                ℹ️ La réservation en ligne est une <strong>demande</strong>, non une confirmation automatique. Elle devient effective uniquement après réception d'un email de confirmation de notre part.
+            </div>
+
+            <p>Les réservations sont gratuites et <strong>sans obligation de paiement</strong>. Aucune empreinte bancaire n'est requise.</p>
+
+            <h3>Capacité et disponibilité</h3>
+            <p><span class="placeholder">[NOM_RESTAURANT]</span> se réserve le droit de refuser une réservation en cas de complet ou de fermeture exceptionnelle. Dans ce cas, nous vous en informerons par email dans les plus brefs délais et vous proposerons, dans la mesure du possible, une date alternative.</p>
+
+            <h3>Horaires de réservation</h3>
+            <p>Les réservations sont acceptées pendant nos horaires d'ouverture :</p>
+            <div class="info-card">
+                🕐 Mardi – Samedi : déjeuner 12h00–14h30, dîner 19h00–22h30<br>
+                🕐 Dimanche : déjeuner uniquement 12h00–14h30<br>
+                🚫 Lundi : fermé
+            </div>
+            <p>Les demandes de réservation soumises en dehors de ces horaires seront traitées à notre réouverture.</p>
+        </div>
+
+        <div class="legal-section" id="confirmation">
+            <h2>Confirmation de réservation</h2>
+            <p>À réception de votre demande, un email de confirmation vous sera adressé à l'adresse email fournie dans le formulaire.</p>
+            <p>Veuillez vérifier vos dossiers de courrier indésirable (spam) si vous ne recevez pas de confirmation dans les <strong>24 heures</strong> suivant votre demande.</p>
+            <p>En cas de non-réponse de notre part dans ce délai, nous vous invitons à nous contacter directement :</p>
+            <div class="info-card">
+                📞 <span class="placeholder">[TELEPHONE]</span><br>
+                📧 <a href="/cdn-cgi/l/email-protection#0e554b434f474253"><span class="placeholder">[EMAIL]</span></a>
+            </div>
+        </div>
+
+        <div class="legal-section" id="annulation">
+            <h2>Annulation</h2>
+            <p>Nous comprenons que des imprévus peuvent survenir. Voici nos conditions d'annulation :</p>
+
+            <div class="info-card">
+                ✅ <strong>Annulation libre</strong> jusqu'à <strong>24h avant</strong> l'heure de réservation<br><br>
+                Pour annuler, contactez-nous par :<br>
+                📞 <span class="placeholder">[TELEPHONE]</span><br>
+                📧 <a href="/cdn-cgi/l/email-protection#1b405e565a525746"><span class="placeholder">[EMAIL]</span></a>
+            </div>
+
+            <p>Toute annulation tardive (moins de 24h avant) ou absence non signalée est enregistrée dans notre système. En cas d'annulations répétées, nous nous réservons le droit de refuser de futures réservations.</p>
+        </div>
+
+        <div class="legal-section" id="retard">
+            <h2>Retard & absence</h2>
+
+            <h3>En cas de retard</h3>
+            <p>La table est conservée à votre nom pendant <strong>15 minutes</strong> après l'heure de réservation convenue. Passé ce délai, et sans nouvelle de votre part, la table pourra être libérée.</p>
+            <p>Si vous prévoyez un retard, nous vous remercions de nous prévenir le plus tôt possible au <span class="placeholder">[TELEPHONE]</span>.</p>
+
+            <h3>En cas d'absence</h3>
+            <p>En cas d'absences répétées et non signalées, <span class="placeholder">[NOM_RESTAURANT]</span> se réserve le droit de refuser de futures réservations en ligne et de vous demander une confirmation téléphonique préalable.</p>
+
+            <div class="warn-card">
+                📞 En cas d'empêchement de dernière minute, appelez-nous directement : <strong><span class="placeholder">[TELEPHONE]</span></strong>
+            </div>
+        </div>
+
+        <div class="legal-section" id="groupes">
+            <h2>Réservations de groupe</h2>
+            <p>Pour les réservations de <strong>8 personnes et plus</strong>, nous vous recommandons de nous contacter directement par téléphone ou par email afin de définir ensemble les modalités adaptées (menu, disposition de salle, éventuelles arrhes).</p>
+            <div class="info-card">
+                📞 <span class="placeholder">[TELEPHONE]</span><br>
+                📧 <a href="/cdn-cgi/l/email-protection#045f4149454d4859"><span class="placeholder">[EMAIL]</span></a>
+            </div>
+            <p>Des conditions particulières (menu imposé, acompte) peuvent s'appliquer pour les groupes, et seront précisées lors de la prise de contact.</p>
+        </div>
+
+        <div class="legal-section" id="allergies">
+            <h2>Allergies & régimes alimentaires</h2>
+            <p>Si vous ou l'un de vos convives présentez des allergies, intolérances ou régimes alimentaires particuliers, nous vous invitons à le mentionner dans le champ « Message » du formulaire de réservation ou à nous en informer à votre arrivée.</p>
+            <div class="warn-card">
+                ⚠️ Bien que nous prenions toutes les précautions nécessaires, notre cuisine manipule des allergènes courants (gluten, fruits à coque, produits laitiers, œufs, crustacés…). En cas d'allergie sévère, nous vous encourageons à nous contacter avant votre visite.
+            </div>
+        </div>
+
+        <div class="legal-section" id="responsabilite-res">
+            <h2>Responsabilité</h2>
+            <p><span class="placeholder">[NOM_RESTAURANT]</span> ne saurait être tenu responsable des dommages de toute nature résultant de l'inexécution ou de la mauvaise exécution d'une réservation due à un cas de force majeure (intempéries, coupure de courant, sinistre, pandémie, etc.).</p>
+            <p>En cas d'impossibilité d'honorer une réservation confirmée de notre fait, nous nous engageons à vous en informer dans les meilleurs délais et à vous proposer une solution alternative.</p>
+        </div>
+
+        <div class="legal-section" id="contact-res">
+            <h2>Contact</h2>
+            <p>Pour toute question relative à votre réservation :</p>
+            <div class="info-card">
+                📞 <span class="placeholder">[TELEPHONE]</span><br>
+                📧 <a href="/cdn-cgi/l/email-protection#c79c828a868e8b9a"><span class="placeholder">[EMAIL]</span></a><br>
+                📍 <span class="placeholder">[NOM_RESTAURANT]</span> — <span class="placeholder">[ADRESSE_COMPLETE]</span>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer class="legal-footer-bar">
+    <div>&copy; <span id="year"></span> <span class="placeholder">[NOM_RESTAURANT]</span> — Tous droits réservés</div>
+    <div style="margin-top:0.5rem">
+        <a href="/mentions-legales">Mentions légales</a>
+        <a href="/confidentialite">Confidentialité</a>
+        <a href="/cookies">Cookies</a>
+        <a href="/conditions-reservation">Conditions de réservation</a>
+    </div>
+</footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+(function(){
+    const links = document.querySelectorAll('.legal-sidebar nav a');
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                links.forEach(l => l.classList.remove('active'));
+                const active = document.querySelector(`.legal-sidebar nav a[href="#${entry.target.id}"]`);
+      
+<script>
+/**
+ * cookie-banner.js
+ * Bannière de consentement cookies — RGPD conforme
+ * À inclure sur toutes les pages (index.html + pages légales)
+ */
+
+(function () {
+    'use strict';
+
+    const STORAGE_KEY = 'ljs_cookies_consent'; // ljs = Le Jardin des Saveurs
+    const BANNER_ID   = 'cookie-banner';
+
+    /* ── Injection du HTML si pas encore dans le DOM ── */
+    function injectBanner() {
+        if (document.getElementById(BANNER_ID)) return; // déjà présent
+
+        const banner = document.createElement('div');
+        banner.id = BANNER_ID;
+        banner.setAttribute('role', 'dialog');
+        banner.setAttribute('aria-label', 'Gestion des cookies');
+        banner.innerHTML = `
+            <div class="cookie-text">
+                <strong>🍪 Ce site utilise des cookies</strong><br>
+                Nous utilisons des cookies essentiels pour le bon fonctionnement du site.
+                En cliquant sur « Accepter », vous consentez également aux cookies d'analyse.
+                <a href="/cookies" target="_blank">En savoir plus</a>
+            </div>
+            <div class="cookie-actions">
+                <button class="cookie-btn cookie-btn-refuse" id="cookie-refuse" aria-label="Refuser les cookies non essentiels">Refuser</button>
+                <button class="cookie-btn cookie-btn-accept" id="cookie-accept" aria-label="Accepter tous les cookies">Accepter</button>
+            </div>`;
+
+        document.body.appendChild(banner);
+
+        // Apparition différée pour laisser la page charger
+        requestAnimationFrame(() => {
+            setTimeout(() => banner.classList.add('visible'), 300);
+        });
+
+        document.getElementById('cookie-accept').addEventListener('click', () => setConsent('accepted'));
+        document.getElementById('cookie-refuse').addEventListener('click', () => setConsent('refused'));
+    }
+
+    /* ── Sauvegarde du choix ── */
+    function setConsent(value) {
+        try {
+            localStorage.setItem(STORAGE_KEY, value);
+        } catch (e) {
+            // fallback cookie si localStorage bloqué
+            document.cookie = `${STORAGE_KEY}=${value};max-age=31536000;path=/;SameSite=Lax`;
+        }
+        hideBanner();
+
+        // Si accepté → on peut activer les analytics ici
+        if (value === 'accepted') {
+            window.dispatchEvent(new CustomEvent('cookiesAccepted'));
+        }
+    }
+
+    /* ── Lecture du consentement ── */
+    function getConsent() {
+        try {
+            return localStorage.getItem(STORAGE_KEY);
+        } catch (e) {
+            const match = document.cookie.match(new RegExp('(?:^|; )' + STORAGE_KEY + '=([^;]*)'));
+            return match ? decodeURIComponent(match[1]) : null;
+        }
+    }
+
+    /* ── Masquage ── */
+    function hideBanner() {
+        const banner = document.getElementById(BANNER_ID);
+        if (!banner) return;
+        banner.classList.remove('visible');
+        setTimeout(() => banner.remove(), 400);
+    }
+
+    /* ── Init ── */
+    function init() {
+        const consent = getConsent();
+        if (!consent) {
+            injectBanner(); // Pas encore de choix → afficher
+        }
+        // Si consent existant → ne rien afficher
+    }
+
+    // Lancement après chargement du DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    // Expose pour usage externe si besoin
+    window.CookieConsent = { getConsent, setConsent };
+
+})();
+</script>
+</body>
+</html>
