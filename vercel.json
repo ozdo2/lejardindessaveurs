@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/mentions-legales",
+      "destination": "/mentions-legales.html"
+    },
+    {
+      "source": "/confidentialite",
+      "destination": "/confidentialite.html"
+    },
+    {
+      "source": "/cookies",
+      "destination": "/cookies.html"
+    },
+    {
+      "source": "/conditions-reservation",
+      "destination": "/conditions-reservation.html"
+    }
+  ]
+}
