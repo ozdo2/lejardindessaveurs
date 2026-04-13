@@ -13,7 +13,7 @@ const RESTAURANT_CONFIG = {
     // 1. IDENTITÉ DU RESTAURANT
     // ─────────────────────────────────────────────
     identite: {
-        nom: "Le Jardin des Saveurs",
+        nom: "Le Jardin des Saveurss",
         slogan: "Une expérience culinaire inoubliable",
         description: "Restaurant gastronomique depuis 1985. Une cuisine authentique et raffinée dans un cadre exceptionnel.",
         annee_fondation: 1985,
