@@ -710,64 +710,11 @@
         btnAppel.href = 'tel:' + C.contact.telephone_href;
         btnAppel.textContent = '📞 Appeler le ' + C.contact.telephone;
 
-        /* ── EmailJS ── */
+        /* ── EmailJS init (utilisé par le module de réservation ci-dessous) ── */
         emailjs.init(C.emailjs.public_key);
 
-        /* ── Réservation (Firestore + EmailJS) ── */
-        const form      = document.getElementById('reservationForm');
-        const msgBox    = document.getElementById('successMessage');
-        const dateInput = document.getElementById('date');
-        dateInput.setAttribute('min', new Date().toISOString().split('T')[0]);
-
-        form.addEventListener('submit', async e => {
-            e.preventDefault();
-            const btn  = form.querySelector('button[type="submit"]');
-            const orig = btn.textContent;
-            btn.textContent = 'Envoi en cours…';
-            btn.disabled = true;
-
-            const reservation = {
-                nom:       document.getElementById('nom').value.trim(),
-                email:     document.getElementById('email').value.trim(),
-                date:      document.getElementById('date').value,
-                heure:     document.getElementById('heure').value,
-                personnes: document.getElementById('personnes').value,
-                telephone: document.getElementById('telephone').value.trim() || 'Non renseigné',
-                message:   document.getElementById('message').value.trim()   || 'Aucun message',
-                statut:    'en_attente',   // en_attente | confirmé | annulé | no_show
-                createdAt: new Date().toISOString(),
-            };
-
-            try {
-                // 1. Sauvegarde Firestore
-                const { db }         = await import('./firebase.js');
-                const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-                await addDoc(collection(db, 'reservations'), reservation);
-
-                // 2. Email via EmailJS
-                await emailjs.send(C.emailjs.service_id, C.emailjs.template_id, {
-                    to_email:  C.emailjs.destinataire,
-                    ...reservation,
-                });
-
-                msgBox.style.display    = 'block';
-                msgBox.style.background = '#d4edda';
-                msgBox.style.color      = '#155724';
-                msgBox.textContent      = '✓ Votre réservation a été envoyée ! Nous vous confirmerons par email.';
-                form.reset();
-
-            } catch (err) {
-                console.error('Erreur réservation:', err);
-                msgBox.style.display    = 'block';
-                msgBox.style.background = '#f8d7da';
-                msgBox.style.color      = '#721c24';
-                msgBox.textContent      = '❌ Une erreur est survenue. Appelez-nous au ' + C.contact.telephone;
-            } finally {
-                btn.textContent = orig;
-                btn.disabled    = false;
-                setTimeout(() => { msgBox.style.display = 'none'; }, 5000);
-            }
-        });
+        /* ── Date minimum formulaire ── */
+        document.getElementById('date').setAttribute('min', new Date().toISOString().split('T')[0]);
 
         /* ── Événements ── */
         const eventsGrid = document.getElementById('events-grid');
@@ -948,5 +895,82 @@
     <!-- Bannière cookie RGPD + styles légaux -->
     <link rel="stylesheet" href="legal.css">
     <script src="cookie-banner.js"></script>
+
+    <!-- ═══════════════════════════════════════════════════════
+         RÉSERVATION — module ES (Firestore + EmailJS)
+         ═══════════════════════════════════════════════════════ -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getFirestore, collection, addDoc }
+            from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey:            "AIzaSyDMC9RPVIH2kHc3brvB9dR6TTEbBaaXxsg",
+            authDomain:        "le-jardin-des-saveurs-630bf.firebaseapp.com",
+            projectId:         "le-jardin-des-saveurs-630bf",
+            storageBucket:     "le-jardin-des-saveurs-630bf.firebasestorage.app",
+            messagingSenderId: "965407064324",
+            appId:             "1:965407064324:web:aa9a447fa94a19c69b5051",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db  = getFirestore(app);
+
+        const form   = document.getElementById('reservationForm');
+        const msgBox = document.getElementById('successMessage');
+
+        form.addEventListener('submit', async e => {
+            e.preventDefault();
+
+            const btn  = form.querySelector('button[type="submit"]');
+            const orig = btn.textContent;
+            btn.textContent = 'Envoi en cours…';
+            btn.disabled    = true;
+
+            // Lire la config depuis la variable globale déjà chargée
+            const C = window.RESTAURANT_CONFIG;
+
+            const reservation = {
+                nom:       document.getElementById('nom').value.trim(),
+                email:     document.getElementById('email').value.trim(),
+                date:      document.getElementById('date').value,
+                heure:     document.getElementById('heure').value,
+                personnes: document.getElementById('personnes').value,
+                telephone: document.getElementById('telephone').value.trim() || 'Non renseigné',
+                message:   document.getElementById('message').value.trim()   || 'Aucun message',
+                statut:    'en_attente',
+                createdAt: new Date().toISOString(),
+            };
+
+            try {
+                // 1. Sauvegarde Firestore
+                await addDoc(collection(db, 'reservations'), reservation);
+
+                // 2. Email via EmailJS (déjà initialisé par le moteur principal)
+                await emailjs.send(
+                    C.emailjs.service_id,
+                    C.emailjs.template_id,
+                    { to_email: C.emailjs.destinataire, ...reservation }
+                );
+
+                msgBox.style.display    = 'block';
+                msgBox.style.background = '#d4edda';
+                msgBox.style.color      = '#155724';
+                msgBox.textContent      = '✓ Votre réservation a été envoyée ! Nous vous confirmerons par email.';
+                form.reset();
+
+            } catch (err) {
+                console.error('Erreur réservation:', err);
+                msgBox.style.display    = 'block';
+                msgBox.style.background = '#f8d7da';
+                msgBox.style.color      = '#721c24';
+                msgBox.textContent      = '❌ Une erreur est survenue. Appelez-nous au ' + C.contact.telephone;
+            } finally {
+                btn.textContent = orig;
+                btn.disabled    = false;
+                setTimeout(() => { msgBox.style.display = 'none'; }, 5000);
+            }
+        });
+    </script>
 </body>
 </html>
