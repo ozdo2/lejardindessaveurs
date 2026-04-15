@@ -714,11 +714,10 @@
         emailjs.init(C.emailjs.public_key);
 
         /* ── Réservation (Firestore + EmailJS) ── */
-       const form      = document.getElementById('reservationForm');
+    const form      = document.getElementById('reservationForm');
 const msgBox    = document.getElementById('successMessage');
 const dateInput = document.getElementById('date');
 
-// Date minimum = aujourd’hui
 dateInput.setAttribute('min', new Date().toISOString().split('T')[0]);
 
 form.addEventListener('submit', async (e) => {
@@ -726,40 +725,39 @@ form.addEventListener('submit', async (e) => {
 
     const btn  = form.querySelector('button[type="submit"]');
     const orig = btn.textContent;
-
     btn.textContent = 'Envoi en cours…';
     btn.disabled = true;
 
-    try {
-        // 🔎 1. Récupération des données
-        const reservation = {
-            nom:       document.getElementById('nom').value.trim(),
-            email:     document.getElementById('email').value.trim(),
-            date:      document.getElementById('date').value,
-            heure:     document.getElementById('heure').value,
-            personnes: document.getElementById('personnes').value,
-            telephone: document.getElementById('telephone').value.trim() || 'Non renseigné',
-            message:   document.getElementById('message').value.trim() || 'Aucun message',
-            statut:    'en_attente',
-            createdAt: new Date().toISOString(),
-        };
+    const reservation = {
+        nom:       document.getElementById('nom').value.trim(),
+        email:     document.getElementById('email').value.trim(),
+        date:      document.getElementById('date').value,
+        heure:     document.getElementById('heure').value,
+        personnes: document.getElementById('personnes').value,
+        telephone: document.getElementById('telephone').value.trim() || 'Non renseigné',
+        message:   document.getElementById('message').value.trim() || 'Aucun message',
+        statut:    'en_attente',
+        createdAt: new Date().toISOString()
+    };
 
-        // 🛑 2. Validation minimale
-        if (!reservation.nom || !reservation.email || !reservation.date || !reservation.heure) {
-            throw new Error("Champs obligatoires manquants");
+    try {
+        /* ───────── FIREBASE ───────── */
+        let firestoreOK = false;
+
+        try {
+            const { db } = await import('./firebase.js');
+            const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+            await addDoc(collection(db, 'reservations'), reservation);
+            firestoreOK = true;
+
+        } catch (err) {
+            console.error("Erreur Firebase :", err);
         }
 
-        console.log("📤 Envoi réservation :", reservation);
+        /* ───────── EMAILJS ───────── */
+        let emailOK = false;
 
-        // 🔥 3. FIREBASE (IMPORTANT : db doit être déjà importé en haut du fichier)
-        const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-        const { db } = await import('./firebase.js');
-
-        const docRef = await addDoc(collection(db, 'reservations'), reservation);
-
-        console.log("✅ Firebase OK ID :", docRef.id);
-
-        // 📧 4. EMAILJS (indépendant pour éviter blocage)
         try {
             await emailjs.send(
                 C.emailjs.service_id,
@@ -769,37 +767,49 @@ form.addEventListener('submit', async (e) => {
                     ...reservation
                 }
             );
-            console.log("✅ Email envoyé");
-        } catch (emailErr) {
-            console.warn("⚠️ Email échoué mais réservation OK :", emailErr);
+
+            emailOK = true;
+
+        } catch (err) {
+            console.error("Erreur EmailJS :", err);
         }
 
-        // ✅ 5. SUCCESS UI
-        msgBox.style.display    = 'block';
-        msgBox.style.background = '#d4edda';
-        msgBox.style.color      = '#155724';
-        msgBox.textContent      = '✓ Réservation envoyée avec succès !';
+        /* ───────── RESULTAT ───────── */
+        if (firestoreOK || emailOK) {
+            msgBox.style.display    = 'block';
+            msgBox.style.background = '#d4edda';
+            msgBox.style.color      = '#155724';
 
-        form.reset();
+            if (firestoreOK && emailOK) {
+                msgBox.textContent = '✓ Réservation envoyée et enregistrée !';
+            } else if (firestoreOK) {
+                msgBox.textContent = '✓ Réservation enregistrée (email non envoyé)';
+            } else {
+                msgBox.textContent = '✓ Email envoyé (sauvegarde échouée)';
+            }
+
+            form.reset();
+
+        } else {
+            throw new Error("Tout a échoué");
+        }
 
     } catch (err) {
-        console.error('❌ ERREUR RÉSERVATION :', err);
+        console.error('Erreur globale :', err);
 
         msgBox.style.display    = 'block';
         msgBox.style.background = '#f8d7da';
         msgBox.style.color      = '#721c24';
-        msgBox.textContent      = '❌ Erreur : ' + err.message;
-
-    } finally {
-        btn.textContent = orig;
-        btn.disabled    = false;
-
-        setTimeout(() => {
-            msgBox.style.display = 'none';
-        }, 5000);
+        msgBox.textContent      = '❌ Une erreur est survenue. Appelez-nous au ' + C.contact.telephone;
     }
-});
 
+    btn.textContent = orig;
+    btn.disabled    = false;
+
+    setTimeout(() => {
+        msgBox.style.display = 'none';
+    }, 5000);
+});
         /* ── Événements ── */
         const eventsGrid = document.getElementById('events-grid');
         C.evenements.forEach(ev => {
