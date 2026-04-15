@@ -724,28 +724,82 @@ dateInput.setAttribute('min', new Date().toISOString().split('T')[0]);
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    console.log("🚀 Submit déclenché");
+    const btn  = form.querySelector('button[type="submit"]');
+    const orig = btn.textContent;
+
+    btn.textContent = 'Envoi en cours…';
+    btn.disabled = true;
 
     try {
-        console.log("1️⃣ Avant import Firebase");
-        const { db } = await import('./firebase.js');
-        console.log("2️⃣ Firebase import OK");
+        // 🔎 1. Récupération des données
+        const reservation = {
+            nom:       document.getElementById('nom').value.trim(),
+            email:     document.getElementById('email').value.trim(),
+            date:      document.getElementById('date').value,
+            heure:     document.getElementById('heure').value,
+            personnes: document.getElementById('personnes').value,
+            telephone: document.getElementById('telephone').value.trim() || 'Non renseigné',
+            message:   document.getElementById('message').value.trim() || 'Aucun message',
+            statut:    'en_attente',
+            createdAt: new Date().toISOString(),
+        };
 
+        // 🛑 2. Validation minimale
+        if (!reservation.nom || !reservation.email || !reservation.date || !reservation.heure) {
+            throw new Error("Champs obligatoires manquants");
+        }
+
+        console.log("📤 Envoi réservation :", reservation);
+
+        // 🔥 3. FIREBASE (IMPORTANT : db doit être déjà importé en haut du fichier)
         const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-        console.log("3️⃣ Firestore import OK");
+        const { db } = await import('./firebase.js');
 
-        console.log("4️⃣ Avant addDoc");
+        const docRef = await addDoc(collection(db, 'reservations'), reservation);
 
-        await addDoc(collection(db, 'reservations'), {
-            test: "ok"
-        });
+        console.log("✅ Firebase OK ID :", docRef.id);
 
-        console.log("✅ 5️⃣ Firestore OK");
+        // 📧 4. EMAILJS (indépendant pour éviter blocage)
+        try {
+            await emailjs.send(
+                C.emailjs.service_id,
+                C.emailjs.template_id,
+                {
+                    to_email: C.emailjs.destinataire,
+                    ...reservation
+                }
+            );
+            console.log("✅ Email envoyé");
+        } catch (emailErr) {
+            console.warn("⚠️ Email échoué mais réservation OK :", emailErr);
+        }
+
+        // ✅ 5. SUCCESS UI
+        msgBox.style.display    = 'block';
+        msgBox.style.background = '#d4edda';
+        msgBox.style.color      = '#155724';
+        msgBox.textContent      = '✓ Réservation envoyée avec succès !';
+
+        form.reset();
 
     } catch (err) {
-        console.error("❌ ERREUR :", err);
+        console.error('❌ ERREUR RÉSERVATION :', err);
+
+        msgBox.style.display    = 'block';
+        msgBox.style.background = '#f8d7da';
+        msgBox.style.color      = '#721c24';
+        msgBox.textContent      = '❌ Erreur : ' + err.message;
+
+    } finally {
+        btn.textContent = orig;
+        btn.disabled    = false;
+
+        setTimeout(() => {
+            msgBox.style.display = 'none';
+        }, 5000);
     }
 });
+
         /* ── Événements ── */
         const eventsGrid = document.getElementById('events-grid');
         C.evenements.forEach(ev => {
