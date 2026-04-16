@@ -892,6 +892,10 @@
         import { getFirestore, collection, addDoc, onSnapshot, orderBy, query }
             from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
+        // ── EmailJS via ESM (accessible dans un module) ──────
+        const emailjsMod = await import('https://cdn.jsdelivr.net/npm/@emailjs/browser@4/+esm');
+        const ejs = emailjsMod.default || emailjsMod;
+
         const app = initializeApp({
             apiKey:            "AIzaSyDMC9RPVIH2kHc3brvB9dR6TTEbBaaXxsg",
             authDomain:        "le-jardin-des-saveurs-630bf.firebaseapp.com",
@@ -902,6 +906,9 @@
         });
         const db = getFirestore(app);
         const C  = window.RESTAURANT_CONFIG;
+
+        // Init EmailJS dans ce module
+        ejs.init(C.emailjs.public_key);
 
         // ── ÉVÉNEMENTS depuis Firestore ──────────────────────
         const eventsGrid = document.getElementById('events-grid');
@@ -954,17 +961,23 @@
             };
 
             try {
+                // 1. Firestore
                 await addDoc(collection(db, 'reservations'), reservation);
-                await emailjs.send(
+
+                // 2. Email au restaurateur via EmailJS ESM
+                await ejs.send(
                     C.emailjs.service_id,
                     C.emailjs.template_id,
                     { to_email: C.emailjs.destinataire, ...reservation }
                 );
+
+                // 3. Message de succès
                 msgBox.style.display    = 'block';
                 msgBox.style.background = '#d4edda';
                 msgBox.style.color      = '#155724';
                 msgBox.textContent      = '✓ Votre réservation a été envoyée ! Nous vous confirmerons par email.';
                 form.reset();
+
             } catch (err) {
                 console.error('Erreur réservation:', err);
                 msgBox.style.display    = 'block';
