@@ -1,10 +1,27 @@
-{
-  "rules": {
-    "reservations": {
-      ".read": "auth != null",
-      ".write": true
-    },
-    ".read": false,
-    ".write": false
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Réservations : écriture publique, lecture/modif admin uniquement
+    match /reservations/{id} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // Blocages : admin uniquement
+    match /blocked/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Événements : lecture publique (site), écriture admin
+    match /evenements/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Tout le reste interdit
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }
