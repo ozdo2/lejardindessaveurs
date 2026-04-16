@@ -659,7 +659,7 @@ window.renderRevenus = function() {
     const mois  = document.getElementById('revenus-mois').value;
     const annee = mois.slice(0,4);
     const today = new Date().toISOString().split('T')[0];
-    const paid  = allRes.filter(r=>r.montant!=null&&r.statut!=='annulé');
+    const paid  = allRes.filter(r=>r.montant!=null&&r.montant!==''&&r.statut!=='annulé').map(r=>({...r,montant:parseFloat(r.montant)||0}));
     const rM    = paid.filter(r=>r.date?.startsWith(mois)).reduce((s,r)=>s+(r.montant||0),0);
     const rJ    = paid.filter(r=>r.date===today).reduce((s,r)=>s+(r.montant||0),0);
     const rA    = paid.filter(r=>r.date?.startsWith(annee)).reduce((s,r)=>s+(r.montant||0),0);
@@ -672,13 +672,18 @@ window.renderRevenus = function() {
     document.getElementById('chart-mois-label').textContent  = mLbl;
     document.getElementById('chart-annee-label').textContent = annee;
 
-    const days = new Date(+annee,+mois.slice(5,7),0).getDate();
+    const [anneeN, moisN] = [parseInt(annee), parseInt(mois.slice(5,7))];
+    const days = new Date(anneeN, moisN, 0).getDate();
     const dData = Array(days).fill(0);
-    paid.filter(r=>r.date?.startsWith(mois)).forEach(r=>{ dData[+r.date.slice(8,10)-1]+=(r.montant||0); });
+    allRes.filter(r => r.date?.startsWith(mois) && r.montant != null && r.statut !== 'annulé')
+          .forEach(r => {
+              const day = parseInt(r.date.slice(8,10), 10) - 1;
+              if (day >= 0 && day < days) dData[day] += (parseFloat(r.montant) || 0);
+          });
     if (chartD) chartD.destroy();
     chartD = new Chart(document.getElementById('chart-daily'),{
         type:'bar',
-        data:{labels:Array.from({length:days},(_,i)=>i+1),datasets:[{label:'€',data:dData,
+        data:{labels:Array.from({length:days},(_,i)=>i+1),datasets:[{label:'Revenus (€)',data:dData,
             backgroundColor:'rgba(44,95,45,.7)',borderColor:'#2c5f2d',borderWidth:1,borderRadius:4}]},
         options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
             scales:{y:{beginAtZero:true,ticks:{callback:v=>v+'€'}}}}
