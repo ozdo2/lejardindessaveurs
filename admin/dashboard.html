@@ -5,552 +5,194 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Dashboard — Administration</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Jost:wght@300;400;500;600&display=swap');
 
         :root {
-            --primary:   #2c5f2d;
-            --primary-l: #e8f5e9;
-            --accent:    #d4af37;
-            --dark:      #1a1a1a;
-            --bg:        #f4f6f4;
-            --white:     #ffffff;
-            --border:    #e0e0e0;
-            --text:      #333;
-            --muted:     #888;
-
-            --status-attente:   #f39c12;
-            --status-confirme:  #27ae60;
-            --status-annule:    #e74c3c;
-            --status-noshow:    #95a5a6;
+            --primary:#2c5f2d; --primary-l:#e8f5e9; --accent:#d4af37;
+            --dark:#1a1a1a; --bg:#f4f6f4; --white:#fff;
+            --border:#e0e0e0; --text:#333; --muted:#888;
+            --s-att:#f39c12; --s-con:#27ae60; --s-ann:#e74c3c; --s-nos:#95a5a6;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Jost', sans-serif;
-            font-weight: 300;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-        }
-
-        /* ── TOPBAR ── */
-        .topbar {
-            background: var(--white);
-            border-bottom: 1px solid var(--border);
-            padding: 0 2rem;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .topbar-logo {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.3rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .topbar-badge {
-            background: var(--primary-l);
-            color: var(--primary);
-            font-size: 0.72rem;
-            font-weight: 500;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .user-info {
-            font-size: 0.85rem;
-            color: var(--muted);
-        }
-
-        .btn-logout {
-            padding: 0.4rem 1rem;
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-family: 'Jost', sans-serif;
-            font-size: 0.82rem;
-            cursor: pointer;
-            color: var(--muted);
-            transition: all 0.2s;
-        }
-
-        .btn-logout:hover { border-color: #e74c3c; color: #e74c3c; }
-
-        /* ── LAYOUT ── */
-        .layout {
-            display: grid;
-            grid-template-columns: 240px 1fr;
-            min-height: calc(100vh - 64px);
-        }
-
-        /* ── SIDEBAR ── */
-        .sidebar {
-            background: var(--white);
-            border-right: 1px solid var(--border);
-            padding: 1.5rem 0;
-        }
-
-        .sidebar-section {
-            padding: 0 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .sidebar-label {
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--muted);
-            padding: 0 0.75rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem 0.75rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            color: var(--text);
-            cursor: pointer;
-            transition: all 0.15s;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            text-decoration: none;
-        }
-
-        .sidebar-link:hover { background: var(--bg); }
-        .sidebar-link.active { background: var(--primary-l); color: var(--primary); font-weight: 500; }
-
-        .sidebar-link .icon { font-size: 1.1rem; width: 20px; text-align: center; }
-
-        .stat-mini {
-            background: var(--primary);
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 0.1rem 0.45rem;
-            border-radius: 10px;
-            margin-left: auto;
-        }
-
-        /* ── MAIN ── */
-        .main {
-            padding: 2rem;
-            overflow-x: hidden;
-        }
-
-        .page-header {
-            margin-bottom: 2rem;
-        }
-
-        .page-header h1 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 2rem;
-            color: var(--dark);
-            font-weight: 600;
-        }
-
-        .page-header p {
-            color: var(--muted);
-            font-size: 0.9rem;
-            margin-top: 0.25rem;
-        }
-
-        /* ── STATS CARDS ── */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 1.25rem 1.5rem;
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .stat-icon {
-            font-size: 1.8rem;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            background: var(--bg);
-            flex-shrink: 0;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--dark);
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 0.78rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 0.2rem;
-        }
-
-        /* ── FILTERS ── */
-        .filters-bar {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 1.5rem;
-        }
-
-        .filter-input {
-            padding: 0.5rem 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 7px;
-            font-family: 'Jost', sans-serif;
-            font-size: 0.88rem;
-            outline: none;
-            transition: border-color 0.2s;
-            color: var(--text);
-        }
-
-        .filter-input:focus { border-color: var(--primary); }
-
-        .filter-input[type="search"] { flex: 1; min-width: 200px; }
-
-        .filter-select {
-            padding: 0.5rem 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 7px;
-            font-family: 'Jost', sans-serif;
-            font-size: 0.88rem;
-            outline: none;
-            background: white;
-            cursor: pointer;
-            color: var(--text);
-        }
-
-        .btn-reset {
-            padding: 0.5rem 1rem;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 7px;
-            font-family: 'Jost', sans-serif;
-            font-size: 0.82rem;
-            cursor: pointer;
-            color: var(--muted);
-            transition: all 0.2s;
-        }
-
-        .btn-reset:hover { color: var(--primary); border-color: var(--primary); }
-
-        /* ── TABLE ── */
-        .table-wrapper {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .table-header {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .table-header h3 {
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: var(--dark);
-        }
-
-        .table-count {
-            font-size: 0.82rem;
-            color: var(--muted);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead th {
-            text-align: left;
-            padding: 0.75rem 1.5rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: var(--muted);
-            background: var(--bg);
-            border-bottom: 1px solid var(--border);
-        }
-
-        tbody tr {
-            border-bottom: 1px solid var(--border);
-            transition: background 0.15s;
-            cursor: pointer;
-        }
-
-        tbody tr:last-child { border-bottom: none; }
-        tbody tr:hover { background: var(--bg); }
-
-        tbody td {
-            padding: 1rem 1.5rem;
-            font-size: 0.88rem;
-            color: var(--text);
-            vertical-align: middle;
-        }
-
-        .td-name { font-weight: 500; color: var(--dark); }
-        .td-date strong { display: block; }
-        .td-date span { font-size: 0.8rem; color: var(--muted); }
-
-        /* ── STATUS BADGE ── */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            padding: 0.25rem 0.65rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .status-badge::before {
-            content: '';
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: currentColor;
-        }
-
-        .status-en_attente  { background: #fef9e7; color: var(--status-attente); }
-        .status-confirmé    { background: #eafaf1; color: var(--status-confirme); }
-        .status-annulé      { background: #fdedec; color: var(--status-annule); }
-        .status-no_show     { background: #f2f3f4; color: var(--status-noshow); }
-
-        /* ── ACTION BUTTONS ── */
-        .action-btns {
-            display: flex;
-            gap: 0.4rem;
-        }
-
-        .btn-action {
-            padding: 0.3rem 0.6rem;
-            border-radius: 5px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            border: 1px solid var(--border);
-            background: white;
-            transition: all 0.15s;
-            font-family: 'Jost', sans-serif;
-        }
-
-        .btn-action:hover { transform: translateY(-1px); }
-        .btn-confirmer:hover { background: #eafaf1; border-color: var(--status-confirme); color: var(--status-confirme); }
-        .btn-annuler:hover   { background: #fdedec; border-color: var(--status-annule); color: var(--status-annule); }
-        .btn-noshow:hover    { background: #f2f3f4; border-color: var(--status-noshow); color: var(--status-noshow); }
-
-        /* ── MODAL ── */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(3px);
-        }
-
-        .modal-overlay.open { display: flex; }
-
-        .modal {
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            max-width: 480px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: modalIn 0.2s ease;
-        }
-
-        @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .modal h2 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.5rem;
-            color: var(--primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .modal-date {
-            font-size: 0.85rem;
-            color: var(--muted);
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .modal-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.6rem 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.9rem;
-        }
-
-        .modal-row:last-of-type { border-bottom: none; }
-
-        .modal-row .label {
-            color: var(--muted);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .modal-row .value { font-weight: 500; color: var(--dark); text-align: right; max-width: 60%; }
-
-        .modal-message {
-            background: var(--bg);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            font-size: 0.88rem;
-            color: #555;
-            margin: 1rem 0;
-            font-style: italic;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .btn-modal {
-            flex: 1;
-            padding: 0.65rem 1rem;
-            border-radius: 7px;
-            font-family: 'Jost', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-        }
-
-        .btn-modal-confirmer { background: #eafaf1; color: var(--status-confirme); }
-        .btn-modal-confirmer:hover { background: var(--status-confirme); color: white; }
-        .btn-modal-annuler   { background: #fdedec; color: var(--status-annule); }
-        .btn-modal-annuler:hover { background: var(--status-annule); color: white; }
-        .btn-modal-noshow    { background: #f2f3f4; color: var(--status-noshow); }
-        .btn-modal-noshow:hover { background: var(--status-noshow); color: white; }
-        .btn-modal-close     { background: var(--bg); color: var(--muted); }
-        .btn-modal-close:hover { background: var(--border); }
-
-        /* ── EMPTY / LOADING ── */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: var(--muted);
-        }
-
-        .empty-state .emoji { font-size: 3rem; margin-bottom: 1rem; }
-        .empty-state p { font-size: 0.95rem; }
-
-        .loading-row td {
-            text-align: center;
-            padding: 3rem;
-            color: var(--muted);
-            font-size: 0.9rem;
-        }
-
-        /* ── CLIENTS VIEW ── */
-        #view-clients { display: none; }
-
-        .client-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
-        }
-
-        .client-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.25rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .client-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(44,95,45,0.1); }
-
-        .client-name { font-weight: 500; color: var(--dark); margin-bottom: 0.25rem; }
-        .client-email { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.75rem; }
-        .client-stats { display: flex; gap: 1rem; }
-        .client-stat { font-size: 0.78rem; }
-        .client-stat strong { display: block; font-size: 1.1rem; color: var(--primary); }
-
-        /* ── RESPONSIVE ── */
-        @media (max-width: 900px) {
-            .layout { grid-template-columns: 1fr; }
-            .sidebar { display: none; }
-            .main { padding: 1rem; }
-            thead { display: none; }
-            tbody tr { display: block; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.75rem; }
-            tbody td { display: flex; justify-content: space-between; padding: 0.3rem 0; border: none; }
-            tbody td::before { content: attr(data-label); font-weight: 500; color: var(--muted); font-size: 0.78rem; }
-            .table-wrapper { border: none; background: transparent; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Jost',sans-serif;font-weight:300;background:var(--bg);color:var(--text);min-height:100vh}
+
+        /* TOPBAR */
+        .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+        .topbar-left{display:flex;align-items:center;gap:1.5rem}
+        .topbar-logo{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--primary);font-weight:600}
+        .topbar-badge{background:var(--primary-l);color:var(--primary);font-size:.72rem;font-weight:500;padding:.2rem .6rem;border-radius:20px;text-transform:uppercase;letter-spacing:1px}
+        .topbar-right{display:flex;align-items:center;gap:1rem}
+        .user-info{font-size:.85rem;color:var(--muted)}
+        .btn-logout{padding:.4rem 1rem;background:transparent;border:1px solid var(--border);border-radius:6px;font-family:'Jost',sans-serif;font-size:.82rem;cursor:pointer;color:var(--muted);transition:all .2s}
+        .btn-logout:hover{border-color:#e74c3c;color:#e74c3c}
+
+        /* LAYOUT */
+        .layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 64px)}
+
+        /* SIDEBAR */
+        .sidebar{background:var(--white);border-right:1px solid var(--border);padding:1.5rem 0}
+        .sidebar-section{padding:0 1rem;margin-bottom:1.5rem}
+        .sidebar-label{font-size:.72rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);padding:0 .75rem;margin-bottom:.5rem;display:block}
+        .sidebar-link{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:8px;font-size:.9rem;color:var(--text);cursor:pointer;transition:all .15s;border:none;background:none;width:100%;text-align:left;text-decoration:none;font-family:'Jost',sans-serif}
+        .sidebar-link:hover{background:var(--bg)}
+        .sidebar-link.active{background:var(--primary-l);color:var(--primary);font-weight:500}
+        .sidebar-link .icon{font-size:1.1rem;width:20px;text-align:center}
+        .stat-mini{background:var(--primary);color:white;font-size:.7rem;font-weight:600;padding:.1rem .45rem;border-radius:10px;margin-left:auto}
+
+        /* MAIN */
+        .main{padding:2rem;overflow-x:hidden}
+        .view{display:none}
+        .view.active{display:block}
+        .page-header{margin-bottom:2rem}
+        .page-header h1{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--dark);font-weight:600}
+        .page-header p{color:var(--muted);font-size:.9rem;margin-top:.25rem}
+
+        /* STATS */
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:1rem;margin-bottom:2rem}
+        .stat-card{background:var(--white);border-radius:12px;padding:1.25rem 1.5rem;border:1px solid var(--border);display:flex;align-items:center;gap:1rem}
+        .stat-icon{font-size:1.8rem;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--bg);flex-shrink:0}
+        .stat-value{font-size:1.8rem;font-weight:600;color:var(--dark);line-height:1}
+        .stat-label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:.2rem}
+
+        /* TOOLBAR */
+        .toolbar{display:flex;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center}
+        .btn-primary-sm{padding:.55rem 1.1rem;background:var(--primary);color:white;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.4rem}
+        .btn-primary-sm:hover{background:#3a7a3b;transform:translateY(-1px)}
+
+        /* FILTERS */
+        .filters-bar{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem}
+        .filter-input{padding:.5rem .75rem;border:1px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:.88rem;outline:none;transition:border-color .2s;color:var(--text)}
+        .filter-input:focus{border-color:var(--primary)}
+        .filter-input[type="search"]{flex:1;min-width:200px}
+        .filter-select{padding:.5rem .75rem;border:1px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:.88rem;outline:none;background:white;cursor:pointer;color:var(--text)}
+        .btn-reset{padding:.5rem 1rem;background:var(--bg);border:1px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:.82rem;cursor:pointer;color:var(--muted);transition:all .2s}
+        .btn-reset:hover{color:var(--primary);border-color:var(--primary)}
+
+        /* TABLE */
+        .table-wrapper{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+        .table-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .table-header h3{font-size:.95rem;font-weight:500;color:var(--dark)}
+        .table-count{font-size:.82rem;color:var(--muted)}
+        table{width:100%;border-collapse:collapse}
+        thead th{text-align:left;padding:.75rem 1.5rem;font-size:.75rem;font-weight:500;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);background:var(--bg);border-bottom:1px solid var(--border)}
+        tbody tr{border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer}
+        tbody tr:last-child{border-bottom:none}
+        tbody tr:hover{background:var(--bg)}
+        tbody td{padding:.9rem 1.5rem;font-size:.88rem;color:var(--text);vertical-align:middle}
+        .td-name{font-weight:500;color:var(--dark)}
+        .td-sub{font-size:.78rem;color:var(--muted)}
+
+        /* STATUS */
+        .status-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;border-radius:20px;font-size:.75rem;font-weight:500}
+        .status-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+        .status-en_attente{background:#fef9e7;color:var(--s-att)}
+        .status-confirmé{background:#eafaf1;color:var(--s-con)}
+        .status-annulé{background:#fdedec;color:var(--s-ann)}
+        .status-no_show{background:#f2f3f4;color:var(--s-nos)}
+
+        /* ACTION BTNS */
+        .action-btns{display:flex;gap:.4rem}
+        .btn-action{padding:.3rem .6rem;border-radius:5px;font-size:.75rem;cursor:pointer;border:1px solid var(--border);background:white;transition:all .15s;font-family:'Jost',sans-serif}
+        .btn-action:hover{transform:translateY(-1px)}
+        .btn-confirmer:hover{background:#eafaf1;border-color:var(--s-con);color:var(--s-con)}
+        .btn-annuler:hover{background:#fdedec;border-color:var(--s-ann);color:var(--s-ann)}
+        .btn-noshow:hover{background:#f2f3f4;border-color:var(--s-nos);color:var(--s-nos)}
+        .btn-delete:hover{background:#fdedec;border-color:var(--s-ann);color:var(--s-ann)}
+
+        /* MODAL */
+        .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+        .modal-overlay.open{display:flex}
+        .modal{background:white;border-radius:16px;padding:2rem;max-width:520px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:mIn .2s ease;max-height:90vh;overflow-y:auto}
+        @keyframes mIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        .modal h2{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--primary);margin-bottom:.25rem}
+        .modal-sub{font-size:.85rem;color:var(--muted);margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
+        .modal-row{display:flex;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.9rem}
+        .modal-row:last-of-type{border-bottom:none}
+        .modal-row .label{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.5px}
+        .modal-row .value{font-weight:500;color:var(--dark);text-align:right;max-width:65%}
+        .modal-message{background:var(--bg);border-radius:8px;padding:.75rem 1rem;font-size:.88rem;color:#555;margin:1rem 0;font-style:italic}
+        .modal-actions{display:flex;gap:.5rem;margin-top:1.5rem;flex-wrap:wrap}
+        .btn-modal{flex:1;min-width:80px;padding:.65rem 1rem;border-radius:7px;font-family:'Jost',sans-serif;font-size:.85rem;font-weight:500;cursor:pointer;border:none;transition:all .2s}
+        .btn-modal-confirmer{background:#eafaf1;color:var(--s-con)}
+        .btn-modal-confirmer:hover{background:var(--s-con);color:white}
+        .btn-modal-annuler{background:#fdedec;color:var(--s-ann)}
+        .btn-modal-annuler:hover{background:var(--s-ann);color:white}
+        .btn-modal-noshow{background:#f2f3f4;color:var(--s-nos)}
+        .btn-modal-noshow:hover{background:var(--s-nos);color:white}
+        .btn-modal-delete{background:#fdedec;color:var(--s-ann)}
+        .btn-modal-delete:hover{background:var(--s-ann);color:white}
+        .btn-modal-close{background:var(--bg);color:var(--muted)}
+        .btn-modal-close:hover{background:var(--border)}
+
+        /* PRIX */
+        .prix-row{display:flex;align-items:center;gap:.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+        .prix-row label{font-size:.85rem;color:var(--muted);white-space:nowrap}
+        .prix-input{flex:1;padding:.5rem .75rem;border:1px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:.95rem;outline:none}
+        .prix-input:focus{border-color:var(--primary)}
+        .btn-save-prix{padding:.5rem 1rem;background:var(--primary);color:white;border:none;border-radius:7px;font-family:'Jost',sans-serif;font-size:.85rem;cursor:pointer}
+        .btn-save-prix:hover{background:#3a7a3b}
+
+        /* FORM MODAL */
+        .form-group-m{margin-bottom:1rem}
+        .form-group-m label{display:block;font-size:.78rem;font-weight:500;color:#555;text-transform:uppercase;letter-spacing:.8px;margin-bottom:.4rem}
+        .form-group-m input,.form-group-m select,.form-group-m textarea{width:100%;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:7px;font-family:'Jost',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;color:var(--text)}
+        .form-group-m input:focus,.form-group-m select:focus,.form-group-m textarea:focus{border-color:var(--primary)}
+        .form-row-m{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+
+        /* CLIENTS */
+        .client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1rem}
+        .client-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.25rem;transition:all .2s}
+        .client-card.blocked{border-color:#fad7d5;background:#fff8f8}
+        .client-card:hover{border-color:var(--primary);box-shadow:0 4px 15px rgba(44,95,45,.1)}
+        .client-name{font-weight:500;color:var(--dark);margin-bottom:.25rem}
+        .client-email{font-size:.82rem;color:var(--muted);margin-bottom:.5rem}
+        .client-stats{display:flex;gap:1rem;margin-bottom:.75rem}
+        .client-stat{font-size:.78rem}
+        .client-stat strong{display:block;font-size:1.1rem;color:var(--primary)}
+        .client-block-btns{display:flex;gap:.5rem;flex-wrap:wrap}
+        .btn-block{padding:.3rem .7rem;border-radius:5px;font-size:.75rem;cursor:pointer;font-family:'Jost',sans-serif;border:1px solid;transition:all .2s}
+        .btn-block-item{border-color:#fad7d5;color:var(--s-ann);background:white}
+        .btn-block-item:hover{background:var(--s-ann);color:white}
+        .btn-unblock{border-color:#27ae60;color:#27ae60;background:white}
+        .btn-unblock:hover{background:#27ae60;color:white}
+        .blocked-badge{background:#fdedec;color:var(--s-ann);font-size:.72rem;padding:.15rem .5rem;border-radius:10px;font-weight:500;margin-left:.5rem}
+
+        /* REVENUS */
+        .revenus-header{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem}
+        .revenus-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:1rem;margin-bottom:2rem}
+        .chart-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
+        .chart-card h3{font-size:1rem;font-weight:500;margin-bottom:1.25rem;color:var(--dark)}
+        .chart-wrap{position:relative;height:280px}
+
+        /* EVENTS */
+        .events-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1rem}
+        .event-admin-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.25rem}
+        .event-icon-big{font-size:2rem;margin-bottom:.5rem}
+        .event-admin-card h4{font-weight:500;color:var(--dark);margin-bottom:.25rem}
+        .event-date-tag{font-size:.8rem;color:var(--accent);font-weight:500;margin-bottom:.5rem}
+        .event-admin-card p{font-size:.85rem;color:var(--muted);line-height:1.6}
+        .event-admin-actions{display:flex;gap:.5rem;margin-top:1rem}
+        .btn-delete-event{padding:.35rem .8rem;background:#fdedec;color:var(--s-ann);border:1px solid #fad7d5;border-radius:6px;font-size:.8rem;cursor:pointer;font-family:'Jost',sans-serif;transition:all .2s}
+        .btn-delete-event:hover{background:var(--s-ann);color:white}
+
+        /* TOAST */
+        #toast{position:fixed;bottom:2rem;right:2rem;background:var(--dark);color:white;padding:.75rem 1.25rem;border-radius:8px;font-size:.88rem;opacity:0;transition:opacity .3s;z-index:9999;pointer-events:none}
+        #toast.show{opacity:1}
+
+        @media(max-width:900px){
+            .layout{grid-template-columns:1fr}
+            .sidebar{display:none}
+            .main{padding:1rem}
+            .form-row-m{grid-template-columns:1fr}
         }
     </style>
 </head>
 <body>
 
-<!-- ── TOPBAR ── -->
+<!-- TOPBAR -->
 <header class="topbar">
     <div class="topbar-left">
         <span class="topbar-logo">Le Jardin des Saveurs</span>
@@ -563,349 +205,558 @@
 </header>
 
 <div class="layout">
+<aside class="sidebar">
+    <div class="sidebar-section">
+        <span class="sidebar-label">Navigation</span>
+        <button class="sidebar-link active" id="nav-reservations" onclick="showView('reservations')">
+            <span class="icon">📅</span>Réservations<span class="stat-mini" id="badge-attente">0</span>
+        </button>
+        <button class="sidebar-link" id="nav-clients" onclick="showView('clients')">
+            <span class="icon">👥</span>Clients
+        </button>
+        <button class="sidebar-link" id="nav-revenus" onclick="showView('revenus')">
+            <span class="icon">📊</span>Revenus
+        </button>
+        <button class="sidebar-link" id="nav-evenements" onclick="showView('evenements')">
+            <span class="icon">🎉</span>Événements
+        </button>
+    </div>
+    <div class="sidebar-section">
+        <span class="sidebar-label">Raccourcis</span>
+        <a href="/" class="sidebar-link" target="_blank"><span class="icon">🌐</span>Voir le site</a>
+    </div>
+</aside>
 
-    <!-- ── SIDEBAR ── -->
-    <aside class="sidebar">
-        <div class="sidebar-section">
-            <div class="sidebar-label">Navigation</div>
-            <button class="sidebar-link active" id="nav-reservations" onclick="showView('reservations')">
-                <span class="icon">📅</span> Réservations
-                <span class="stat-mini" id="badge-attente">0</span>
-            </button>
-            <button class="sidebar-link" id="nav-clients" onclick="showView('clients')">
-                <span class="icon">👥</span> Clients
-            </button>
+<main class="main">
+
+    <!-- VUE RÉSERVATIONS -->
+    <div class="view active" id="view-reservations">
+        <div class="page-header"><h1>Réservations</h1><p id="today-label"></p></div>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon">⏳</div><div><div class="stat-value" id="stat-attente">—</div><div class="stat-label">En attente</div></div></div>
+            <div class="stat-card"><div class="stat-icon">✅</div><div><div class="stat-value" id="stat-confirme">—</div><div class="stat-label">Confirmées</div></div></div>
+            <div class="stat-card"><div class="stat-icon">📆</div><div><div class="stat-value" id="stat-today">—</div><div class="stat-label">Aujourd'hui</div></div></div>
+            <div class="stat-card"><div class="stat-icon">👥</div><div><div class="stat-value" id="stat-couverts">—</div><div class="stat-label">Couverts ce mois</div></div></div>
         </div>
-        <div class="sidebar-section">
-            <div class="sidebar-label">Raccourcis</div>
-            <a href="/" class="sidebar-link" target="_blank">
-                <span class="icon">🌐</span> Voir le site
-            </a>
+        <div class="toolbar">
+            <button class="btn-primary-sm" onclick="openAddModal()">➕ Nouvelle réservation</button>
         </div>
-    </aside>
-
-    <!-- ── MAIN ── -->
-    <main class="main">
-
-        <!-- VIEW : RÉSERVATIONS -->
-        <div id="view-reservations">
-            <div class="page-header">
-                <h1>Réservations</h1>
-                <p id="today-label">Chargement…</p>
-            </div>
-
-            <!-- Stats -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">⏳</div>
-                    <div>
-                        <div class="stat-value" id="stat-attente">—</div>
-                        <div class="stat-label">En attente</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">✅</div>
-                    <div>
-                        <div class="stat-value" id="stat-confirme">—</div>
-                        <div class="stat-label">Confirmées</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📆</div>
-                    <div>
-                        <div class="stat-value" id="stat-today">—</div>
-                        <div class="stat-label">Aujourd'hui</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">👥</div>
-                    <div>
-                        <div class="stat-value" id="stat-couverts">—</div>
-                        <div class="stat-label">Couverts ce mois</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Filtres -->
-            <div class="filters-bar">
-                <input type="search" class="filter-input" id="search" placeholder="🔍 Rechercher un client…">
-                <input type="date"   class="filter-input" id="filter-date">
-                <select class="filter-select" id="filter-statut">
-                    <option value="">Tous les statuts</option>
-                    <option value="en_attente">En attente</option>
-                    <option value="confirmé">Confirmé</option>
-                    <option value="annulé">Annulé</option>
-                    <option value="no_show">No-show</option>
-                </select>
-                <button class="btn-reset" onclick="resetFilters()">Réinitialiser</button>
-            </div>
-
-            <!-- Table -->
-            <div class="table-wrapper">
-                <div class="table-header">
-                    <h3>Liste des réservations</h3>
-                    <span class="table-count" id="table-count"></span>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Client</th>
-                            <th>Date & Heure</th>
-                            <th>Couverts</th>
-                            <th>Statut</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reservations-tbody">
-                        <tr class="loading-row"><td colspan="5">Chargement des réservations…</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="filters-bar">
+            <input type="search" class="filter-input" id="search" placeholder="🔍 Rechercher…">
+            <input type="date" class="filter-input" id="filter-date">
+            <select class="filter-select" id="filter-statut">
+                <option value="">Tous les statuts</option>
+                <option value="en_attente">En attente</option>
+                <option value="confirmé">Confirmé</option>
+                <option value="annulé">Annulé</option>
+                <option value="no_show">No-show</option>
+            </select>
+            <button class="btn-reset" onclick="resetFilters()">Réinitialiser</button>
         </div>
-
-        <!-- VIEW : CLIENTS -->
-        <div id="view-clients">
-            <div class="page-header">
-                <h1>Historique clients</h1>
-                <p>Tous vos clients classés par nombre de visites</p>
+        <div class="table-wrapper">
+            <div class="table-header">
+                <h3>Liste des réservations</h3>
+                <span class="table-count" id="table-count"></span>
             </div>
-            <div class="client-grid" id="client-grid">
-                <p style="color:var(--muted)">Chargement…</p>
-            </div>
+            <table>
+                <thead><tr><th>Client</th><th>Date & Heure</th><th>Couverts</th><th>Montant</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody id="reservations-tbody"><tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--muted)">Chargement…</td></tr></tbody>
+            </table>
         </div>
+    </div>
 
-    </main>
+    <!-- VUE CLIENTS -->
+    <div class="view" id="view-clients">
+        <div class="page-header"><h1>Clients</h1><p>Historique et gestion des blocages</p></div>
+        <div class="filters-bar">
+            <input type="search" class="filter-input" id="search-clients" placeholder="🔍 Rechercher un client…" oninput="renderClients()">
+        </div>
+        <div class="client-grid" id="client-grid"></div>
+    </div>
+
+    <!-- VUE REVENUS -->
+    <div class="view" id="view-revenus">
+        <div class="page-header"><h1>Revenus</h1><p>Suivi financier des réservations</p></div>
+        <div class="revenus-header">
+            <select class="filter-select" id="revenus-mois" onchange="renderRevenus()"></select>
+        </div>
+        <div class="revenus-stats">
+            <div class="stat-card"><div class="stat-icon">💰</div><div><div class="stat-value" id="rev-mois">—</div><div class="stat-label">Ce mois (€)</div></div></div>
+            <div class="stat-card"><div class="stat-icon">📅</div><div><div class="stat-value" id="rev-jour">—</div><div class="stat-label">Aujourd'hui (€)</div></div></div>
+            <div class="stat-card"><div class="stat-icon">🍽️</div><div><div class="stat-value" id="rev-moy">—</div><div class="stat-label">Moy. / table (€)</div></div></div>
+            <div class="stat-card"><div class="stat-icon">📈</div><div><div class="stat-value" id="rev-annee">—</div><div class="stat-label">Cette année (€)</div></div></div>
+        </div>
+        <div class="chart-card">
+            <h3>Revenus journaliers — <span id="chart-mois-label"></span></h3>
+            <div class="chart-wrap"><canvas id="chart-daily"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>Revenus mensuels — <span id="chart-annee-label"></span></h3>
+            <div class="chart-wrap"><canvas id="chart-monthly"></canvas></div>
+        </div>
+    </div>
+
+    <!-- VUE ÉVÉNEMENTS -->
+    <div class="view" id="view-evenements">
+        <div class="page-header"><h1>Événements</h1><p>Gérez les événements affichés sur le site</p></div>
+        <div class="toolbar">
+            <button class="btn-primary-sm" onclick="openAddEventModal()">➕ Nouvel événement</button>
+        </div>
+        <div class="events-admin-grid" id="events-admin-grid"><p style="color:var(--muted)">Chargement…</p></div>
+    </div>
+
+</main>
 </div>
 
-<!-- ── MODAL DÉTAIL ── -->
-<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
-    <div class="modal" id="modal">
-        <h2 id="modal-nom"></h2>
-        <p class="modal-date" id="modal-date"></p>
-        <div id="modal-rows"></div>
-        <div class="modal-message" id="modal-message"></div>
+<!-- MODAL DÉTAIL RÉSERVATION -->
+<div class="modal-overlay" id="modal-detail" onclick="closeModal('modal-detail',event)">
+    <div class="modal">
+        <h2 id="detail-nom"></h2>
+        <p class="modal-sub" id="detail-sub"></p>
+        <div id="detail-rows"></div>
+        <div class="modal-message" id="detail-message"></div>
+        <div class="prix-row">
+            <label>Montant payé (€)</label>
+            <input type="number" class="prix-input" id="prix-input" min="0" step="0.01" placeholder="0.00">
+            <button class="btn-save-prix" onclick="savePrix()">Enregistrer</button>
+        </div>
         <div class="modal-actions">
             <button class="btn-modal btn-modal-confirmer" onclick="updateStatut('confirmé')">✅ Confirmer</button>
             <button class="btn-modal btn-modal-annuler"   onclick="updateStatut('annulé')">❌ Annuler</button>
             <button class="btn-modal btn-modal-noshow"    onclick="updateStatut('no_show')">🚫 No-show</button>
-            <button class="btn-modal btn-modal-close"     onclick="closeModal()">Fermer</button>
+            <button class="btn-modal btn-modal-delete"    onclick="deleteReservation()">🗑️ Supprimer</button>
+            <button class="btn-modal btn-modal-close"     onclick="closeModal('modal-detail')">Fermer</button>
         </div>
     </div>
 </div>
 
+<!-- MODAL AJOUT RÉSERVATION -->
+<div class="modal-overlay" id="modal-add" onclick="closeModal('modal-add',event)">
+    <div class="modal">
+        <h2>Nouvelle réservation</h2>
+        <p class="modal-sub">Réservation manuelle (téléphone, etc.)</p>
+        <div class="form-row-m">
+            <div class="form-group-m"><label>Nom complet *</label><input type="text" id="add-nom" placeholder="Jean Dupont"></div>
+            <div class="form-group-m"><label>Email</label><input type="email" id="add-email" placeholder="jean@email.com"></div>
+        </div>
+        <div class="form-row-m">
+            <div class="form-group-m"><label>Date *</label><input type="date" id="add-date"></div>
+            <div class="form-group-m"><label>Heure *</label><input type="time" id="add-heure"></div>
+        </div>
+        <div class="form-row-m">
+            <div class="form-group-m">
+                <label>Couverts *</label>
+                <select id="add-personnes">
+                    <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                    <option value="4" selected>4</option><option value="5">5</option><option value="6">6</option>
+                    <option value="7">7</option><option value="8">8+</option>
+                </select>
+            </div>
+            <div class="form-group-m"><label>Téléphone</label><input type="tel" id="add-telephone" placeholder="+33 6 12 34 56 78"></div>
+        </div>
+        <div class="form-group-m"><label>Notes</label><textarea id="add-message" rows="2" placeholder="Allergies, demandes spéciales…"></textarea></div>
+        <div class="form-group-m">
+            <label>Statut initial</label>
+            <select id="add-statut"><option value="confirmé">Confirmé</option><option value="en_attente">En attente</option></select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-modal btn-modal-confirmer" onclick="saveNewReservation()">✅ Créer</button>
+            <button class="btn-modal btn-modal-close"     onclick="closeModal('modal-add')">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL AJOUT ÉVÉNEMENT -->
+<div class="modal-overlay" id="modal-event" onclick="closeModal('modal-event',event)">
+    <div class="modal">
+        <h2>Nouvel événement</h2>
+        <p class="modal-sub">Sera affiché sur le site public</p>
+        <div class="form-group-m"><label>Icône (emoji) *</label><input type="text" id="ev-icone" placeholder="🎵" maxlength="4"></div>
+        <div class="form-group-m"><label>Titre *</label><input type="text" id="ev-titre" placeholder="Soirée Jazz Live"></div>
+        <div class="form-group-m"><label>Date affichée *</label><input type="text" id="ev-date" placeholder="Tous les vendredis soirs"></div>
+        <div class="form-group-m"><label>Description</label><textarea id="ev-description" rows="3" placeholder="Décrivez l'événement…"></textarea></div>
+        <div class="modal-actions">
+            <button class="btn-modal btn-modal-confirmer" onclick="saveEvent()">✅ Publier</button>
+            <button class="btn-modal btn-modal-close"     onclick="closeModal('modal-event')">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
 <script type="module">
-    import { auth, db } from '../firebase.js';
-    import { onAuthStateChanged, signOut }
-        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-    import { collection, onSnapshot, doc, updateDoc, orderBy, query }
-        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged, signOut }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, onSnapshot, doc,
+         addDoc, updateDoc, deleteDoc, orderBy, query, setDoc, getDocs }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-    // ── Auth guard ──
-    onAuthStateChanged(auth, user => {
-        if (!user) { window.location.href = '/admin'; return; }
-        document.getElementById('user-email').textContent = user.email;
+const app  = initializeApp({
+    apiKey:"AIzaSyDMC9RPVIH2kHc3brvB9dR6TTEbBaaXxsg",
+    authDomain:"le-jardin-des-saveurs-630bf.firebaseapp.com",
+    projectId:"le-jardin-des-saveurs-630bf",
+    storageBucket:"le-jardin-des-saveurs-630bf.firebasestorage.app",
+    messagingSenderId:"965407064324",
+    appId:"1:965407064324:web:aa9a447fa94a19c69b5051"
+});
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+emailjs.init("9cbH8LkCwz3dX1YKP");
+const SVC_ID   = "service_uqqrt7m";
+const TPL_CONF = "template_c50bmdp";
+const REST_TEL  = "+33 1 42 34 56 78";
+const REST_ADDR = "42 Avenue des Gourmets, 75001 Paris";
+
+// AUTH GUARD
+onAuthStateChanged(auth, u => {
+    if (!u) { window.location.href = '/admin'; return; }
+    document.getElementById('user-email').textContent = u.email;
+});
+document.getElementById('btn-logout').addEventListener('click', async () => {
+    await signOut(auth); window.location.href = '/admin';
+});
+
+// STATE
+let allRes     = [];
+let allBlocked = {};
+let allEvents  = [];
+let currentId  = null;
+let chartD     = null;
+let chartM     = null;
+
+// BLOCKED
+onSnapshot(collection(db,'blocked'), snap => {
+    allBlocked = {};
+    snap.forEach(d => { allBlocked[d.id] = d.data(); });
+    renderClients();
+});
+
+// RESERVATIONS
+onSnapshot(query(collection(db,'reservations'), orderBy('createdAt','desc')), snap => {
+    allRes = snap.docs.map(d => ({id:d.id,...d.data()}));
+    updateStats(); renderTable(); renderClients(); renderRevenus();
+});
+
+// EVENTS
+onSnapshot(collection(db,'evenements'), snap => {
+    allEvents = snap.docs.map(d => ({id:d.id,...d.data()}));
+    renderEvents();
+});
+
+// ── STATS ──
+function updateStats() {
+    const today = new Date().toISOString().split('T')[0];
+    const month = today.slice(0,7);
+    const att   = allRes.filter(r => r.statut==='en_attente').length;
+    document.getElementById('stat-attente').textContent  = att;
+    document.getElementById('stat-confirme').textContent = allRes.filter(r=>r.statut==='confirmé').length;
+    document.getElementById('stat-today').textContent    = allRes.filter(r=>r.date===today).length;
+    document.getElementById('stat-couverts').textContent = allRes.filter(r=>r.date?.startsWith(month)&&r.statut!=='annulé').reduce((s,r)=>s+(parseInt(r.personnes)||0),0);
+    document.getElementById('badge-attente').textContent = att;
+    const ds = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    document.getElementById('today-label').textContent = ds.charAt(0).toUpperCase()+ds.slice(1);
+}
+
+// ── TABLE ──
+function renderTable() {
+    const s = document.getElementById('search').value.toLowerCase();
+    const d = document.getElementById('filter-date').value;
+    const v = document.getElementById('filter-statut').value;
+    let f = allRes.filter(r => {
+        const ms = !s || [r.nom,r.email,r.telephone].some(x=>x?.toLowerCase().includes(s));
+        return ms && (!d||r.date===d) && (!v||r.statut===v);
+    }).sort((a,b)=>(a.date+(a.heure||''))>(b.date+(b.heure||''))?-1:1);
+
+    document.getElementById('table-count').textContent = f.length+' réservation'+(f.length!==1?'s':'');
+    const tb = document.getElementById('reservations-tbody');
+    if (!f.length) { tb.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--muted)">Aucune réservation</td></tr>`; return; }
+    tb.innerHTML = f.map(r=>`
+        <tr onclick="openDetail('${r.id}')">
+            <td><div class="td-name">${esc(r.nom)}</div><div class="td-sub">${esc(r.email||'—')}</div></td>
+            <td><strong>${fmtDate(r.date)}</strong><div class="td-sub">${r.heure||'—'}</div></td>
+            <td>${r.personnes} pers.</td>
+            <td>${r.montant!=null?r.montant+' €':'<span style="color:var(--muted)">—</span>'}</td>
+            <td><span class="status-badge status-${r.statut}">${lblStat(r.statut)}</span></td>
+            <td onclick="event.stopPropagation()"><div class="action-btns">
+                <button class="btn-action btn-confirmer" title="Confirmer" onclick="qConfirm('${r.id}')">✅</button>
+                <button class="btn-action btn-annuler"   title="Annuler"   onclick="qUpdate('${r.id}','annulé')">❌</button>
+                <button class="btn-action btn-noshow"    title="No-show"   onclick="qUpdate('${r.id}','no_show')">🚫</button>
+                <button class="btn-action btn-delete"    title="Supprimer" onclick="qDelete('${r.id}')">🗑️</button>
+            </div></td>
+        </tr>`).join('');
+}
+
+// ── MODAL DÉTAIL ──
+window.openDetail = function(id) {
+    const r = allRes.find(x=>x.id===id); if (!r) return;
+    currentId = id;
+    document.getElementById('detail-nom').textContent = r.nom;
+    document.getElementById('detail-sub').textContent = `${fmtDate(r.date)} à ${r.heure||'—'} — ${r.personnes} pers.`;
+    document.getElementById('detail-rows').innerHTML = `
+        <div class="modal-row"><span class="label">Email</span><span class="value">${esc(r.email||'—')}</span></div>
+        <div class="modal-row"><span class="label">Téléphone</span><span class="value">${esc(r.telephone||'—')}</span></div>
+        <div class="modal-row"><span class="label">Origine</span><span class="value">${r.origine==='telephone'?'📞 Téléphone':'🌐 Site web'}</span></div>
+        <div class="modal-row"><span class="label">Statut</span><span class="value"><span class="status-badge status-${r.statut}">${lblStat(r.statut)}</span></span></div>
+        <div class="modal-row"><span class="label">Reçue le</span><span class="value">${r.createdAt?new Date(r.createdAt).toLocaleDateString('fr-FR'):'—'}</span></div>`;
+    document.getElementById('detail-message').textContent = r.message||'Aucun message';
+    document.getElementById('prix-input').value = r.montant??'';
+    document.getElementById('modal-detail').classList.add('open');
+};
+
+window.closeModal = function(id,e) {
+    if (!e||e.target.classList.contains('modal-overlay')) {
+        document.getElementById(id).classList.remove('open');
+        if (id==='modal-detail') currentId=null;
+    }
+};
+
+// ── STATUTS ──
+window.updateStatut = async function(statut) {
+    if (!currentId) return;
+    const r = allRes.find(x=>x.id===currentId);
+    await updateDoc(doc(db,'reservations',currentId),{statut});
+    if (statut==='confirmé' && r?.email) sendConfirm(r);
+    document.getElementById('modal-detail').classList.remove('open');
+    toast('Statut mis à jour'+(statut==='confirmé'&&r?.email?' — email envoyé':''));
+};
+
+window.qUpdate = async function(id,statut) {
+    await updateDoc(doc(db,'reservations',id),{statut}); toast('Statut mis à jour');
+};
+
+window.qConfirm = async function(id) {
+    const r = allRes.find(x=>x.id===id); if (!r) return;
+    await updateDoc(doc(db,'reservations',id),{statut:'confirmé'});
+    if (r.email) sendConfirm(r);
+    toast('Confirmé'+(r.email?' — email envoyé':''));
+};
+
+function sendConfirm(r) {
+    emailjs.send(SVC_ID,TPL_CONF,{
+        client_email:r.email, client_nom:r.nom,
+        date:fmtDate(r.date), heure:r.heure||'—',
+        personnes:r.personnes, adresse:REST_ADDR, telephone:REST_TEL
+    }).catch(e=>console.warn('Email:',e));
+}
+
+// ── PRIX ──
+window.savePrix = async function() {
+    if (!currentId) return;
+    const val = parseFloat(document.getElementById('prix-input').value);
+    if (isNaN(val)||val<0) { toast('Montant invalide'); return; }
+    await updateDoc(doc(db,'reservations',currentId),{montant:val});
+    toast('Montant enregistré');
+};
+
+// ── SUPPRESSION ──
+window.deleteReservation = async function() {
+    if (!currentId||!confirm('Supprimer définitivement ?')) return;
+    await deleteDoc(doc(db,'reservations',currentId));
+    document.getElementById('modal-detail').classList.remove('open');
+    toast('Supprimée');
+};
+window.qDelete = async function(id) {
+    if (!confirm('Supprimer ?')) return;
+    await deleteDoc(doc(db,'reservations',id)); toast('Supprimée');
+};
+
+// ── AJOUT MANUEL ──
+window.openAddModal = function() {
+    document.getElementById('add-date').value  = new Date().toISOString().split('T')[0];
+    document.getElementById('add-heure').value = '19:30';
+    ['add-nom','add-email','add-telephone','add-message'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('modal-add').classList.add('open');
+};
+window.saveNewReservation = async function() {
+    const nom=document.getElementById('add-nom').value.trim();
+    const date=document.getElementById('add-date').value;
+    const heure=document.getElementById('add-heure').value;
+    if (!nom||!date||!heure) { toast('Nom, date et heure requis'); return; }
+    await addDoc(collection(db,'reservations'),{
+        nom, date, heure,
+        email:    document.getElementById('add-email').value.trim()||'Non renseigné',
+        personnes:document.getElementById('add-personnes').value,
+        telephone:document.getElementById('add-telephone').value.trim()||'Non renseigné',
+        message:  document.getElementById('add-message').value.trim()||'Aucun message',
+        statut:   document.getElementById('add-statut').value,
+        origine:  'telephone',
+        createdAt:new Date().toISOString()
+    });
+    document.getElementById('modal-add').classList.remove('open');
+    toast('Réservation créée');
+};
+
+// ── CLIENTS + BLOCAGES ──
+window.renderClients = function() {
+    const s = document.getElementById('search-clients')?.value.toLowerCase()||'';
+    const by = {};
+    allRes.forEach(r => {
+        const k = r.email||r.telephone||r.nom; if (!k) return;
+        if (!by[k]) by[k]={nom:r.nom,email:r.email,telephone:r.telephone,res:[]};
+        by[k].res.push(r);
+    });
+    let clients = Object.values(by)
+        .filter(c=>!s||[c.nom,c.email,c.telephone].some(v=>v?.toLowerCase().includes(s)))
+        .sort((a,b)=>b.res.length-a.res.length);
+    const grid = document.getElementById('client-grid');
+    if (!clients.length) { grid.innerHTML='<p style="color:var(--muted)">Aucun client.</p>'; return; }
+
+    grid.innerHTML = clients.map(c => {
+        const total = c.res.length;
+        const conf  = c.res.filter(r=>r.statut==='confirmé').length;
+        const last  = [...c.res].sort((a,b)=>a.date>b.date?-1:1)[0];
+        const eKey  = c.email    ? 'email_'+btoa(c.email).replace(/=/g,'')     : null;
+        const tKey  = c.telephone&& c.telephone!=='Non renseigné' ? 'tel_'+btoa(c.telephone).replace(/=/g,'') : null;
+        const eBl   = eKey && allBlocked[eKey];
+        const tBl   = tKey && allBlocked[tKey];
+        const bl    = eBl||tBl;
+        return `<div class="client-card ${bl?'blocked':''}">
+            <div class="client-name">${esc(c.nom)}${bl?'<span class="blocked-badge">🚫 Bloqué</span>':''}</div>
+            ${c.email?`<div class="client-email">✉️ ${esc(c.email)}</div>`:''}
+            ${tKey?`<div class="client-email">📞 ${esc(c.telephone)}</div>`:''}
+            <div class="client-stats">
+                <div class="client-stat"><strong>${total}</strong>résa</div>
+                <div class="client-stat"><strong>${conf}</strong>conf.</div>
+                <div class="client-stat"><strong>${fmtDate(last?.date)}</strong>dernière</div>
+            </div>
+            <div class="client-block-btns">
+                ${eKey?(eBl
+                    ?`<button class="btn-block btn-unblock" onclick="unblock('${eKey}')">✅ Débloquer email</button>`
+                    :`<button class="btn-block btn-block-item" onclick="blockIt('${eKey}','email','${esc(c.email)}')">🚫 Bloquer email</button>`):''}
+                ${tKey?(tBl
+                    ?`<button class="btn-block btn-unblock" onclick="unblock('${tKey}')">✅ Débloquer tél.</button>`
+                    :`<button class="btn-block btn-block-item" onclick="blockIt('${tKey}','tel','${esc(c.telephone)}')">🚫 Bloquer tél.</button>`):''}
+            </div>
+        </div>`;
+    }).join('');
+};
+
+window.blockIt = async function(key,type,value) {
+    if (!confirm(`Bloquer "${value}" ?`)) return;
+    await setDoc(doc(db,'blocked',key),{type,value,blockedAt:new Date().toISOString()});
+    toast('Bloqué');
+};
+window.unblock = async function(key) {
+    await deleteDoc(doc(db,'blocked',key)); toast('Débloqué');
+};
+
+// ── REVENUS ──
+function initMoisSelect() {
+    const sel = document.getElementById('revenus-mois');
+    const now = new Date(); sel.innerHTML='';
+    for (let i=0;i<12;i++) {
+        const d = new Date(now.getFullYear(),now.getMonth()-i,1);
+        const val = d.toISOString().slice(0,7);
+        const lbl = d.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+        sel.innerHTML += `<option value="${val}">${lbl.charAt(0).toUpperCase()+lbl.slice(1)}</option>`;
+    }
+}
+initMoisSelect();
+
+window.renderRevenus = function() {
+    const mois  = document.getElementById('revenus-mois').value;
+    const annee = mois.slice(0,4);
+    const today = new Date().toISOString().split('T')[0];
+    const paid  = allRes.filter(r=>r.montant!=null&&r.statut!=='annulé');
+    const rM    = paid.filter(r=>r.date?.startsWith(mois)).reduce((s,r)=>s+(r.montant||0),0);
+    const rJ    = paid.filter(r=>r.date===today).reduce((s,r)=>s+(r.montant||0),0);
+    const rA    = paid.filter(r=>r.date?.startsWith(annee)).reduce((s,r)=>s+(r.montant||0),0);
+    const cnt   = paid.filter(r=>r.date?.startsWith(mois)).length;
+    document.getElementById('rev-mois').textContent  = rM.toFixed(0);
+    document.getElementById('rev-jour').textContent  = rJ.toFixed(0);
+    document.getElementById('rev-moy').textContent   = cnt?(rM/cnt).toFixed(0):0;
+    document.getElementById('rev-annee').textContent = rA.toFixed(0);
+    const mLbl = new Date(mois+'-01').toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+    document.getElementById('chart-mois-label').textContent  = mLbl;
+    document.getElementById('chart-annee-label').textContent = annee;
+
+    const days = new Date(+annee,+mois.slice(5,7),0).getDate();
+    const dData = Array(days).fill(0);
+    paid.filter(r=>r.date?.startsWith(mois)).forEach(r=>{ dData[+r.date.slice(8,10)-1]+=(r.montant||0); });
+    if (chartD) chartD.destroy();
+    chartD = new Chart(document.getElementById('chart-daily'),{
+        type:'bar',
+        data:{labels:Array.from({length:days},(_,i)=>i+1),datasets:[{label:'€',data:dData,
+            backgroundColor:'rgba(44,95,45,.7)',borderColor:'#2c5f2d',borderWidth:1,borderRadius:4}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+            scales:{y:{beginAtZero:true,ticks:{callback:v=>v+'€'}}}}
     });
 
-    document.getElementById('btn-logout').addEventListener('click', async () => {
-        await signOut(auth);
-        window.location.href = '/admin';
+    const mData = Array(12).fill(0);
+    paid.filter(r=>r.date?.startsWith(annee)).forEach(r=>{ mData[+r.date.slice(5,7)-1]+=(r.montant||0); });
+    if (chartM) chartM.destroy();
+    chartM = new Chart(document.getElementById('chart-monthly'),{
+        type:'line',
+        data:{labels:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],
+            datasets:[{label:'€',data:mData,backgroundColor:'rgba(212,175,55,.15)',
+                borderColor:'#d4af37',borderWidth:2,fill:true,tension:.4,pointBackgroundColor:'#d4af37'}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+            scales:{y:{beginAtZero:true,ticks:{callback:v=>v+'€'}}}}
     });
+};
 
-    // ── State ──
-    let allReservations = [];
-    let currentDocId    = null;
+// ── ÉVÉNEMENTS ──
+function renderEvents() {
+    const g = document.getElementById('events-admin-grid');
+    if (!allEvents.length) { g.innerHTML='<p style="color:var(--muted)">Aucun événement.</p>'; return; }
+    g.innerHTML = allEvents.map(ev=>`
+        <div class="event-admin-card">
+            <div class="event-icon-big">${esc(ev.icone||'🎉')}</div>
+            <div class="event-date-tag">${esc(ev.date)}</div>
+            <h4>${esc(ev.titre)}</h4>
+            <p>${esc(ev.description||'')}</p>
+            <div class="event-admin-actions">
+                <button class="btn-delete-event" onclick="deleteEvent('${ev.id}')">🗑️ Supprimer</button>
+            </div>
+        </div>`).join('');
+}
 
-    // ── Load reservations (realtime) ──
-    const q = query(collection(db, 'reservations'), orderBy('date', 'desc'));
-
-    onSnapshot(q, snapshot => {
-        allReservations = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        updateStats();
-        renderTable();
-        renderClients();
+window.openAddEventModal = function() {
+    ['ev-icone','ev-titre','ev-date','ev-description'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('modal-event').classList.add('open');
+};
+window.saveEvent = async function() {
+    const titre=document.getElementById('ev-titre').value.trim();
+    const date=document.getElementById('ev-date').value.trim();
+    if (!titre||!date) { toast('Titre et date requis'); return; }
+    await addDoc(collection(db,'evenements'),{
+        icone:document.getElementById('ev-icone').value.trim()||'🎉',
+        titre, date, description:document.getElementById('ev-description').value.trim(),
+        createdAt:new Date().toISOString()
     });
+    document.getElementById('modal-event').classList.remove('open');
+    toast('Événement publié !');
+};
+window.deleteEvent = async function(id) {
+    if (!confirm('Supprimer cet événement du site ?')) return;
+    await deleteDoc(doc(db,'evenements',id)); toast('Événement supprimé');
+};
 
-    // ── Stats ──
-    function updateStats() {
-        const today = new Date().toISOString().split('T')[0];
-        const thisMonth = today.slice(0, 7);
+// ── NAV ──
+window.showView = function(v) {
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.sidebar-link').forEach(x=>x.classList.remove('active'));
+    document.getElementById('view-'+v).classList.add('active');
+    document.getElementById('nav-'+v).classList.add('active');
+    if (v==='revenus') renderRevenus();
+};
 
-        document.getElementById('stat-attente').textContent =
-            allReservations.filter(r => r.statut === 'en_attente').length;
-        document.getElementById('stat-confirme').textContent =
-            allReservations.filter(r => r.statut === 'confirmé').length;
-        document.getElementById('stat-today').textContent =
-            allReservations.filter(r => r.date === today).length;
-        document.getElementById('stat-couverts').textContent =
-            allReservations
-                .filter(r => r.date && r.date.startsWith(thisMonth) && r.statut !== 'annulé')
-                .reduce((sum, r) => sum + (parseInt(r.personnes) || 0), 0);
+// ── FILTERS ──
+document.getElementById('search').addEventListener('input',renderTable);
+document.getElementById('filter-date').addEventListener('change',renderTable);
+document.getElementById('filter-statut').addEventListener('change',renderTable);
+window.resetFilters = function() {
+    ['search','filter-date','filter-statut'].forEach(i=>document.getElementById(i).value='');
+    renderTable();
+};
 
-        const attente = allReservations.filter(r => r.statut === 'en_attente').length;
-        document.getElementById('badge-attente').textContent = attente;
-
-        const dateStr = new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-        document.getElementById('today-label').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
-    }
-
-    // ── Render table ──
-    function renderTable() {
-        const search  = document.getElementById('search').value.toLowerCase();
-        const date    = document.getElementById('filter-date').value;
-        const statut  = document.getElementById('filter-statut').value;
-
-        let filtered = allReservations.filter(r => {
-            const matchSearch = !search ||
-                r.nom?.toLowerCase().includes(search) ||
-                r.email?.toLowerCase().includes(search) ||
-                r.telephone?.toLowerCase().includes(search);
-            const matchDate   = !date   || r.date === date;
-            const matchStatut = !statut || r.statut === statut;
-            return matchSearch && matchDate && matchStatut;
-        });
-
-        // Sort: upcoming first
-        filtered.sort((a, b) => (a.date + a.heure) > (b.date + b.heure) ? -1 : 1);
-
-        const tbody = document.getElementById('reservations-tbody');
-        document.getElementById('table-count').textContent = filtered.length + ' réservation' + (filtered.length !== 1 ? 's' : '');
-
-        if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:3rem;color:var(--muted)">Aucune réservation trouvée</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = filtered.map(r => `
-            <tr onclick="openModal('${r.id}')">
-                <td data-label="Client">
-                    <div class="td-name">${esc(r.nom)}</div>
-                    <div style="font-size:0.78rem;color:var(--muted)">${esc(r.email)}</div>
-                </td>
-                <td data-label="Date">
-                    <div class="td-date">
-                        <strong>${formatDate(r.date)}</strong>
-                        <span>${r.heure || '—'}</span>
-                    </div>
-                </td>
-                <td data-label="Couverts">${r.personnes} pers.</td>
-                <td data-label="Statut"><span class="status-badge status-${r.statut}">${labelStatut(r.statut)}</span></td>
-                <td data-label="Actions" onclick="event.stopPropagation()">
-                    <div class="action-btns">
-                        <button class="btn-action btn-confirmer" onclick="quickUpdate('${r.id}','confirmé')">✅</button>
-                        <button class="btn-action btn-annuler"   onclick="quickUpdate('${r.id}','annulé')">❌</button>
-                        <button class="btn-action btn-noshow"    onclick="quickUpdate('${r.id}','no_show')">🚫</button>
-                    </div>
-                </td>
-            </tr>`).join('');
-    }
-
-    // ── Render clients ──
-    function renderClients() {
-        const byClient = {};
-        allReservations.forEach(r => {
-            const key = r.email;
-            if (!key) return;
-            if (!byClient[key]) byClient[key] = { nom: r.nom, email: r.email, telephone: r.telephone, reservations: [] };
-            byClient[key].reservations.push(r);
-        });
-
-        const clients = Object.values(byClient)
-            .sort((a, b) => b.reservations.length - a.reservations.length);
-
-        const grid = document.getElementById('client-grid');
-        if (clients.length === 0) {
-            grid.innerHTML = '<p style="color:var(--muted)">Aucun client enregistré.</p>';
-            return;
-        }
-
-        grid.innerHTML = clients.map(c => {
-            const total     = c.reservations.length;
-            const confirmes = c.reservations.filter(r => r.statut === 'confirmé').length;
-            const derniere  = c.reservations.sort((a,b) => a.date > b.date ? -1 : 1)[0];
-            return `
-            <div class="client-card">
-                <div class="client-name">${esc(c.nom)}</div>
-                <div class="client-email">${esc(c.email)}</div>
-                ${c.telephone && c.telephone !== 'Non renseigné' ? `<div class="client-email">📞 ${esc(c.telephone)}</div>` : ''}
-                <div class="client-stats">
-                    <div class="client-stat"><strong>${total}</strong>réservation${total > 1 ? 's' : ''}</div>
-                    <div class="client-stat"><strong>${confirmes}</strong>confirmée${confirmes > 1 ? 's' : ''}</div>
-                    <div class="client-stat"><strong>${formatDate(derniere?.date)}</strong>dernière</div>
-                </div>
-            </div>`;
-        }).join('');
-    }
-
-    // ── Modal ──
-    window.openModal = function(id) {
-        const r = allReservations.find(x => x.id === id);
-        if (!r) return;
-        currentDocId = id;
-
-        document.getElementById('modal-nom').textContent  = r.nom;
-        document.getElementById('modal-date').textContent = `${formatDate(r.date)} à ${r.heure} — ${r.personnes} personne${r.personnes > 1 ? 's' : ''}`;
-        document.getElementById('modal-message').textContent = r.message || 'Aucun message';
-        document.getElementById('modal-rows').innerHTML = `
-            <div class="modal-row"><span class="label">Email</span><span class="value">${esc(r.email)}</span></div>
-            <div class="modal-row"><span class="label">Téléphone</span><span class="value">${esc(r.telephone)}</span></div>
-            <div class="modal-row"><span class="label">Statut</span><span class="value"><span class="status-badge status-${r.statut}">${labelStatut(r.statut)}</span></span></div>
-            <div class="modal-row"><span class="label">Reçue le</span><span class="value">${r.createdAt ? new Date(r.createdAt).toLocaleDateString('fr-FR') : '—'}</span></div>`;
-
-        document.getElementById('modal-overlay').classList.add('open');
-    };
-
-    window.closeModal = function(e) {
-        if (!e || e.target === document.getElementById('modal-overlay')) {
-            document.getElementById('modal-overlay').classList.remove('open');
-            currentDocId = null;
-        }
-    };
-
-    window.updateStatut = async function(statut) {
-        if (!currentDocId) return;
-        await updateDoc(doc(db, 'reservations', currentDocId), { statut });
-        document.getElementById('modal-overlay').classList.remove('open');
-    };
-
-    window.quickUpdate = async function(id, statut) {
-        await updateDoc(doc(db, 'reservations', id), { statut });
-    };
-
-    // ── Filters ──
-    document.getElementById('search').addEventListener('input', renderTable);
-    document.getElementById('filter-date').addEventListener('change', renderTable);
-    document.getElementById('filter-statut').addEventListener('change', renderTable);
-
-    window.resetFilters = function() {
-        document.getElementById('search').value       = '';
-        document.getElementById('filter-date').value  = '';
-        document.getElementById('filter-statut').value = '';
-        renderTable();
-    };
-
-    // ── Views ──
-    window.showView = function(view) {
-        document.getElementById('view-reservations').style.display = view === 'reservations' ? 'block' : 'none';
-        document.getElementById('view-clients').style.display      = view === 'clients'      ? 'block' : 'none';
-        document.getElementById('nav-reservations').classList.toggle('active', view === 'reservations');
-        document.getElementById('nav-clients').classList.toggle('active', view === 'clients');
-    };
-
-    // ── Helpers ──
-    function esc(str) {
-        return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    function formatDate(dateStr) {
-        if (!dateStr) return '—';
-        const [y, m, d] = dateStr.split('-');
-        return `${d}/${m}/${y}`;
-    }
-
-    function labelStatut(s) {
-        return { en_attente: 'En attente', confirmé: 'Confirmé', annulé: 'Annulé', no_show: 'No-show' }[s] || s;
-    }
+// ── HELPERS ──
+function esc(s){ return(s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function fmtDate(d){ if(!d)return'—'; const[y,m,j]=d.split('-'); return`${j}/${m}/${y}` }
+function lblStat(s){ return{en_attente:'En attente',confirmé:'Confirmé',annulé:'Annulé',no_show:'No-show'}[s]||s }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800) }
 </script>
-
 </body>
 </html>
