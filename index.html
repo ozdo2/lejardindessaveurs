@@ -9,32 +9,33 @@
     <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
-    <!-- Google Analytics — chargé uniquement si cookies acceptés -->
+    <!-- Google Analytics — lu depuis restaurant.config.js -->
     <script>
         (function() {
-            const consent = localStorage.getItem('ljs_cookies_consent');
-            if (consent === 'accepted') {
-                const s = document.createElement('script');
-                s.src = 'https://www.googletagmanager.com/gtag/js?id=G-175ECPB5QL';
-                s.async = true;
+            function loadGA() {
+                const cfg = window.RESTAURANT_CONFIG;
+                if (!cfg || !cfg.analytics || !cfg.analytics.measurement_id) return;
+                const id = cfg.analytics.measurement_id;
+                const s  = document.createElement('script');
+                s.src    = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+                s.async  = true;
                 document.head.appendChild(s);
                 window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
+                function gtag(){ dataLayer.push(arguments); }
                 window.gtag = gtag;
                 gtag('js', new Date());
-                gtag('config', 'G-175ECPB5QL');
+                gtag('config', id);
             }
-            // Activer GA si l'utilisateur accepte en cours de session
-            window.addEventListener('cookiesAccepted', function() {
-                const s = document.createElement('script');
-                s.src = 'https://www.googletagmanager.com/gtag/js?id=G-175ECPB5QL';
-                s.async = true;
-                document.head.appendChild(s);
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                window.gtag = gtag;
-                gtag('js', new Date());
-                gtag('config', 'G-175ECPB5QL');
+            // Respecter le consentement cookie si activé dans la config
+            document.addEventListener('DOMContentLoaded', function() {
+                const cfg = window.RESTAURANT_CONFIG;
+                const respecter = cfg && cfg.analytics && cfg.analytics.respecter_consentement;
+                if (respecter) {
+                    if (localStorage.getItem('ljs_cookies_consent') === 'accepted') loadGA();
+                    window.addEventListener('cookiesAccepted', loadGA);
+                } else {
+                    loadGA();
+                }
             });
         })();
     </script>
@@ -934,6 +935,12 @@
             for (const item of C.chatbot_reponses) {
                 if (item.mots_cles.some(k => msg.includes(k))) { reply = item.reponse; break; }
             }
+            // Injection dynamique des vraies valeurs du restaurant
+            const adresse = C.contact.adresse_ligne1 + ', ' + C.contact.adresse_ligne2;
+            reply = reply
+                .replace(/{{tel}}/g,     C.contact.telephone)
+                .replace(/{{email}}/g,   C.contact.email)
+                .replace(/{{adresse}}/g, adresse);
 
             const botMsg = document.createElement('div');
             botMsg.innerHTML = `<b>Restaurant :</b> ${reply}`;
@@ -956,14 +963,7 @@
         import { getFirestore, collection, addDoc, getDocs, onSnapshot, orderBy, query }
             from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-        const app = initializeApp({
-            apiKey:            "AIzaSyDMC9RPVIH2kHc3brvB9dR6TTEbBaaXxsg",
-            authDomain:        "le-jardin-des-saveurs-630bf.firebaseapp.com",
-            projectId:         "le-jardin-des-saveurs-630bf",
-            storageBucket:     "le-jardin-des-saveurs-630bf.firebasestorage.app",
-            messagingSenderId: "965407064324",
-            appId:             "1:965407064324:web:aa9a447fa94a19c69b5051",
-        });
+        const app = initializeApp(window.RESTAURANT_CONFIG.firebase);
         const db = getFirestore(app);
 
         // ── EmailJS — appel fetch direct, zéro dépendance SDK ──
