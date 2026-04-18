@@ -194,6 +194,54 @@
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .success-message { display: none; padding: 1rem; border-radius: 5px; margin-top: 1rem; text-align: center; }
 
+        /* ── POPUP CONFIRMATION RÉSERVATION ── */
+        .resa-popup-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.55); z-index: 9998;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+            animation: fadeInOverlay 0.25s ease;
+        }
+        .resa-popup-overlay.open { display: flex; }
+        @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+
+        .resa-popup {
+            background: white; border-radius: 16px;
+            padding: 2.5rem 2rem; max-width: 420px; width: 90%;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+            animation: popupIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes popupIn {
+            from { opacity: 0; transform: scale(0.85) translateY(20px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .resa-popup-icon {
+            font-size: 3.5rem; margin-bottom: 1rem; line-height: 1;
+        }
+        .resa-popup h3 {
+            font-family: var(--font-primary); font-size: 1.6rem;
+            color: var(--primary-color); margin-bottom: 0.75rem; font-weight: normal;
+        }
+        .resa-popup p {
+            color: #555; font-size: 0.95rem; line-height: 1.7; margin-bottom: 0.5rem;
+        }
+        .resa-popup .popup-highlight {
+            background: #e8f5e9; border-left: 3px solid var(--primary-color);
+            border-radius: 0 6px 6px 0; padding: 0.75rem 1rem;
+            font-size: 0.9rem; color: var(--primary-color);
+            font-weight: 600; margin: 1rem 0; text-align: left;
+        }
+        .resa-popup-close {
+            margin-top: 1.5rem; padding: 0.8rem 2rem;
+            background: var(--primary-color); color: white;
+            border: none; border-radius: 6px; font-size: 1rem;
+            cursor: pointer; transition: all 0.2s; font-family: var(--font-secondary);
+            width: 100%;
+        }
+        .resa-popup-close:hover { background: var(--secondary-color); transform: translateY(-1px); }
+
         /* ─────────────────────────────────────────────────────────
            ÉVÉNEMENTS
            ───────────────────────────────────────────────────────── */
@@ -602,6 +650,22 @@
         </div>
     </footer>
 
+    <!-- ── POPUP CONFIRMATION RÉSERVATION ──────────────────── -->
+    <div class="resa-popup-overlay" id="resa-popup-overlay">
+        <div class="resa-popup">
+            <div class="resa-popup-icon">✅</div>
+            <h3>Réservation envoyée !</h3>
+            <p>Votre demande a bien été reçue.</p>
+            <div class="popup-highlight">
+                📬 Veuillez vérifier votre boîte mail pour confirmer que votre réservation est bien prise en compte.
+            </div>
+            <p style="font-size:0.85rem;color:#888">Pensez à vérifier vos spams si vous ne recevez rien dans les prochaines minutes.</p>
+            <button class="resa-popup-close" onclick="document.getElementById('resa-popup-overlay').classList.remove('open')">
+                Compris, merci !
+            </button>
+        </div>
+    </div>
+
     <!-- ── CHATBOT ────────────────────────────────────────── -->
     <div id="chatbot">
         <div id="chat-header">💬 Besoin d'aide ?</div>
@@ -1000,20 +1064,25 @@
                     origine:   'site',
                     createdAt: new Date().toISOString(),
                 };
+
+                // Si Firestore échoue → vrai catch, on affiche l'erreur
                 await addDoc(collection(db, 'reservations'), reservation);
 
-                // ── 3. Email au restaurateur ──
-                const _Cmail = window.RESTAURANT_CONFIG;
-                await sendEmail(_Cmail.emailjs.template_id, {
-                    to_email:  _Cmail.emailjs.destinataire,
-                    ...reservation,
-                });
-
-                // ── 4. Succès ──
-                showMsg(true, '✓ Votre réservation a été envoyée ! Nous vous confirmerons par email.');
+                // ── 3. Succès dès que Firestore est OK ──
                 form.reset();
+                document.getElementById('resa-popup-overlay').classList.add('open');
+
+                // ── 4. Email restaurateur — silencieux si ça échoue ──
+                const _Cmail = window.RESTAURANT_CONFIG;
+                if (_Cmail) {
+                    sendEmail(_Cmail.emailjs.template_id, {
+                        to_email: _Cmail.emailjs.destinataire,
+                        ...reservation,
+                    }).catch(err => console.warn('Email non envoyé (réservation OK):', err));
+                }
 
             } catch (err) {
+                // Seulement si Firestore ou vérification blocage a échoué
                 console.error('Erreur réservation:', err);
                 const _Cerr = window.RESTAURANT_CONFIG;
                 showMsg(false, '❌ Une erreur est survenue. Appelez-nous au ' + (_Cerr ? _Cerr.contact.telephone : 'notre numéro'));
