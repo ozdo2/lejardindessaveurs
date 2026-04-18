@@ -7,6 +7,8 @@
     <title id="page-title">Restaurant</title>
 
     <!-- EmailJS -->
+    <!-- ⚠️ Config restaurant — DOIT être en premier -->
+    <script src="restaurant.config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
     <!-- Google Analytics — lu depuis restaurant.config.js -->
@@ -674,9 +676,6 @@
         <input id="chat-input" placeholder="Écrivez votre message…">
     </div>
     <button id="chat-toggle">💬</button>
-
-    <!-- ── CONFIG (toujours chargée avant ce script) ──────── -->
-    <script src="restaurant.config.js"></script>
 
     <!-- ═══════════════════════════════════════════════════════
          MOTEUR DU TEMPLATE — NE PAS MODIFIER
