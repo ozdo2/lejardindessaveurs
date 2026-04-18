@@ -901,11 +901,10 @@
             appId:             "1:965407064324:web:aa9a447fa94a19c69b5051",
         });
         const db = getFirestore(app);
-        const C  = window.RESTAURANT_CONFIG;
 
         // ── EmailJS — appel fetch direct, zéro dépendance SDK ──
-        // Évite tous les problèmes de scope/cache du SDK dans un module ES
         async function sendEmail(templateId, params) {
+            const C = window.RESTAURANT_CONFIG;
             const payload = {
                 service_id:  C.emailjs.service_id,
                 template_id: templateId,
@@ -981,7 +980,8 @@
                 );
 
                 if (emailBloque || telBloque) {
-                    showMsg(false, '❌ Nous ne pouvons pas accepter cette réservation. Contactez-nous au ' + C.contact.telephone);
+                    const _C = window.RESTAURANT_CONFIG;
+                    showMsg(false, '❌ Nous ne pouvons pas accepter cette réservation. Contactez-nous au ' + (_C ? _C.contact.telephone : 'notre numéro'));
                     btn.textContent = orig;
                     btn.disabled    = false;
                     return;
@@ -1003,8 +1003,9 @@
                 await addDoc(collection(db, 'reservations'), reservation);
 
                 // ── 3. Email au restaurateur ──
-                await sendEmail(C.emailjs.template_id, {
-                    to_email:  C.emailjs.destinataire,
+                const _Cmail = window.RESTAURANT_CONFIG;
+                await sendEmail(_Cmail.emailjs.template_id, {
+                    to_email:  _Cmail.emailjs.destinataire,
                     ...reservation,
                 });
 
@@ -1014,7 +1015,8 @@
 
             } catch (err) {
                 console.error('Erreur réservation:', err);
-                showMsg(false, '❌ Une erreur est survenue. Appelez-nous au ' + C.contact.telephone);
+                const _Cerr = window.RESTAURANT_CONFIG;
+                showMsg(false, '❌ Une erreur est survenue. Appelez-nous au ' + (_Cerr ? _Cerr.contact.telephone : 'notre numéro'));
             } finally {
                 btn.textContent = orig;
                 btn.disabled    = false;
