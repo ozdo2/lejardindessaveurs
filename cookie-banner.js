@@ -22,7 +22,7 @@
             <div class="cookie-text">
                 <strong>🍪 Ce site utilise des cookies</strong><br>
                 Nous utilisons des cookies essentiels pour le bon fonctionnement du site.
-                En cliquant sur « Accepter », vous consentez également aux cookies d'analyse.
+                En cliquant sur « Accepter », vous consentez également à Google Analytics (mesure d'audience).
                 <a href="/cookies" target="_blank">En savoir plus</a>
             </div>
             <div class="cookie-actions">
