@@ -160,8 +160,6 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
-    <!-- Config restaurant -->
-    <script src="../restaurant.config.js"></script>
 </head>
 <body>
 
@@ -190,12 +188,9 @@
 </div>
 
 <script type="module">
-    import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged }
+    import { auth } from '../firebase.js';
+    import { signInWithEmailAndPassword, onAuthStateChanged }
         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-
-    const app  = initializeApp(window.RESTAURANT_CONFIG.firebase);
-    const auth = getAuth(app);
 
     // Si déjà connecté → rediriger direct vers dashboard
     onAuthStateChanged(auth, user => {
