@@ -188,9 +188,19 @@
 </div>
 
 <script type="module">
-    import { auth } from '../firebase.js';
-    import { signInWithEmailAndPassword, onAuthStateChanged }
+    import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged }
         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const app  = initializeApp({
+        apiKey:            "AIzaSyDMC9RPVIH2kHc3brvB9dR6TTEbBaaXxsg",
+        authDomain:        "le-jardin-des-saveurs-630bf.firebaseapp.com",
+        projectId:         "le-jardin-des-saveurs-630bf",
+        storageBucket:     "le-jardin-des-saveurs-630bf.firebasestorage.app",
+        messagingSenderId: "965407064324",
+        appId:             "1:965407064324:web:aa9a447fa94a19c69b5051",
+    });
+    const auth = getAuth(app);
 
     // Si déjà connecté → rediriger direct vers dashboard
     onAuthStateChanged(auth, user => {
