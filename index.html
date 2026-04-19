@@ -9,24 +9,32 @@
     <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
-    <!-- Google Analytics -->
+    <!-- Google Analytics — chargé uniquement si cookies acceptés -->
     <script>
         (function() {
-            const GA_ID = 'G-175ECPB5QL';
-            function loadGA() {
+            const consent = localStorage.getItem('ljs_cookies_consent');
+            if (consent === 'accepted') {
                 const s = document.createElement('script');
-                s.src   = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+                s.src = 'https://www.googletagmanager.com/gtag/js?id=G-175ECPB5QL';
                 s.async = true;
                 document.head.appendChild(s);
                 window.dataLayer = window.dataLayer || [];
-                function gtag(){ dataLayer.push(arguments); }
+                function gtag(){dataLayer.push(arguments);}
                 window.gtag = gtag;
                 gtag('js', new Date());
-                gtag('config', GA_ID);
+                gtag('config', 'G-175ECPB5QL');
             }
-            document.addEventListener('DOMContentLoaded', function() {
-                if (localStorage.getItem('ljs_cookies_consent') === 'accepted') loadGA();
-                window.addEventListener('cookiesAccepted', loadGA);
+            // Activer GA si l'utilisateur accepte en cours de session
+            window.addEventListener('cookiesAccepted', function() {
+                const s = document.createElement('script');
+                s.src = 'https://www.googletagmanager.com/gtag/js?id=G-175ECPB5QL';
+                s.async = true;
+                document.head.appendChild(s);
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                window.gtag = gtag;
+                gtag('js', new Date());
+                gtag('config', 'G-175ECPB5QL');
             });
         })();
     </script>
@@ -666,6 +674,9 @@
     </div>
     <button id="chat-toggle">💬</button>
 
+    <!-- ── CONFIG (toujours chargée avant ce script) ──────── -->
+    <script src="restaurant.config.js"></script>
+
     <!-- ═══════════════════════════════════════════════════════
          MOTEUR DU TEMPLATE — NE PAS MODIFIER
          ═══════════════════════════════════════════════════════ -->
@@ -923,12 +934,6 @@
             for (const item of C.chatbot_reponses) {
                 if (item.mots_cles.some(k => msg.includes(k))) { reply = item.reponse; break; }
             }
-            // Injection dynamique des vraies valeurs du restaurant
-            const adresse = C.contact.adresse_ligne1 + ', ' + C.contact.adresse_ligne2;
-            reply = reply
-                .replace(/{{tel}}/g,     C.contact.telephone)
-                .replace(/{{email}}/g,   C.contact.email)
-                .replace(/{{adresse}}/g, adresse);
 
             const botMsg = document.createElement('div');
             botMsg.innerHTML = `<b>Restaurant :</b> ${reply}`;
@@ -938,9 +943,6 @@
 
     })();
     </script>
-
-    <!-- Config restaurant pour le moteur principal -->
-    <script src="restaurant.config.js"></script>
 
     <!-- Bannière cookie RGPD + styles légaux -->
     <link rel="stylesheet" href="legal.css">
@@ -954,152 +956,141 @@
         import { getFirestore, collection, addDoc, getDocs, onSnapshot, orderBy, query }
             from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-        async function init() {
-            // Firebase credentials en dur — indépendant de restaurant.config.js
-            const FIREBASE_CONFIG = {
-                apiKey:            "AIzaSyDMC9RPVIH2kHc3brvB9dR6TTEbBaaXxsg",
-                authDomain:        "le-jardin-des-saveurs-630bf.firebaseapp.com",
-                projectId:         "le-jardin-des-saveurs-630bf",
-                storageBucket:     "le-jardin-des-saveurs-630bf.firebasestorage.app",
-                messagingSenderId: "965407064324",
-                appId:             "1:965407064324:web:aa9a447fa94a19c69b5051",
+        const app = initializeApp({
+            apiKey:            "AIzaSyDMC9RPVIH2kHc3brvB9dR6TTEbBaaXxsg",
+            authDomain:        "le-jardin-des-saveurs-630bf.firebaseapp.com",
+            projectId:         "le-jardin-des-saveurs-630bf",
+            storageBucket:     "le-jardin-des-saveurs-630bf.firebasestorage.app",
+            messagingSenderId: "965407064324",
+            appId:             "1:965407064324:web:aa9a447fa94a19c69b5051",
+        });
+        const db = getFirestore(app);
+
+        // ── EmailJS — appel fetch direct, zéro dépendance SDK ──
+        async function sendEmail(templateId, params) {
+            const C = window.RESTAURANT_CONFIG;
+            const payload = {
+                service_id:  C.emailjs.service_id,
+                template_id: templateId,
+                user_id:     C.emailjs.public_key,
+                template_params: params,
             };
-            const EMAILJS_SERVICE  = "service_uqqrt7m";
-            const EMAILJS_TEMPLATE = "template_0e9bc1m";
-            const EMAILJS_KEY      = "9cbH8LkCwz3dX1YKP";
-            const EMAILJS_DEST     = "l41205761@gmail.com";
+            const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(payload),
+            });
+            if (!res.ok) throw new Error('EmailJS HTTP ' + res.status);
+        }
 
-            const app = initializeApp(FIREBASE_CONFIG);
-            const db  = getFirestore(app);
+        // ── ÉVÉNEMENTS depuis Firestore ──────────────────────
+        const eventsGrid = document.getElementById('events-grid');
+        eventsGrid.innerHTML = '<p style="text-align:center;color:#aaa;padding:2rem">Chargement…</p>';
 
-            // Lire la config restaurant pour les infos affichées (téléphone etc.)
-            const C = window.RESTAURANT_CONFIG || {};
-
-            // ── EmailJS via fetch direct ──────────────────────────
-            async function sendEmail(templateId, params) {
-                const payload = {
-                    service_id:      EMAILJS_SERVICE,
-                    template_id:     templateId,
-                    user_id:         EMAILJS_KEY,
-                    template_params: params,
-                };
-                const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-                    method:  'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body:    JSON.stringify(payload),
-                });
-                if (!res.ok) throw new Error('EmailJS HTTP ' + res.status);
+        onSnapshot(
+            query(collection(db, 'evenements'), orderBy('createdAt', 'desc')),
+            snapshot => {
+                if (snapshot.empty) {
+                    eventsGrid.innerHTML = '<p style="text-align:center;color:#aaa;padding:2rem">Aucun événement à venir.</p>';
+                    return;
+                }
+                eventsGrid.innerHTML = snapshot.docs.map(d => {
+                    const ev = d.data();
+                    return `
+                        <div class="event-card">
+                            <div class="event-image">${ev.icone || '🎉'}</div>
+                            <div class="event-content">
+                                <div class="event-date">${ev.date || ''}</div>
+                                <h3>${ev.titre || ''}</h3>
+                                <p>${ev.description || ''}</p>
+                            </div>
+                        </div>`;
+                }).join('');
             }
+        );
 
-            // ── ÉVÉNEMENTS depuis Firestore ──────────────────────
-            const eventsGrid = document.getElementById('events-grid');
-            if (eventsGrid) {
-                eventsGrid.innerHTML = '<p style="text-align:center;color:#aaa;padding:2rem">Chargement…</p>';
-                onSnapshot(
-                    query(collection(db, 'evenements'), orderBy('createdAt', 'desc')),
-                    snapshot => {
-                        if (snapshot.empty) {
-                            eventsGrid.innerHTML = '<p style="text-align:center;color:#aaa;padding:2rem">Aucun événement à venir.</p>';
-                            return;
-                        }
-                        eventsGrid.innerHTML = snapshot.docs.map(d => {
-                            const ev = d.data();
-                            return `
-                                <div class="event-card">
-                                    <div class="event-image">${ev.icone || '🎉'}</div>
-                                    <div class="event-content">
-                                        <div class="event-date">${ev.date || ''}</div>
-                                        <h3>${ev.titre || ''}</h3>
-                                        <p>${ev.description || ''}</p>
-                                    </div>
-                                </div>`;
-                        }).join('');
-                    }
+        // ── RÉSERVATION ──────────────────────────────────────
+        const form   = document.getElementById('reservationForm');
+        const msgBox = document.getElementById('successMessage');
+
+        function showMsg(ok, text) {
+            msgBox.style.display    = 'block';
+            msgBox.style.background = ok ? '#d4edda' : '#f8d7da';
+            msgBox.style.color      = ok ? '#155724'  : '#721c24';
+            msgBox.textContent      = text;
+            setTimeout(() => { msgBox.style.display = 'none'; }, 6000);
+        }
+
+        form.addEventListener('submit', async e => {
+            e.preventDefault();
+            const btn  = form.querySelector('button[type="submit"]');
+            const orig = btn.textContent;
+            btn.textContent = 'Envoi en cours…';
+            btn.disabled    = true;
+
+            const emailSaisi = document.getElementById('email').value.trim();
+            const telSaisi   = document.getElementById('telephone').value.trim();
+
+            try {
+                // ── 1. Vérification blocage email / téléphone ──
+                const blockedSnap = await getDocs(collection(db, 'blocked'));
+                const blockedList = blockedSnap.docs.map(d => d.data());
+
+                const emailBloque = emailSaisi && blockedList.some(
+                    b => b.type === 'email' && b.value.toLowerCase() === emailSaisi.toLowerCase()
                 );
-            }
+                const telBloque = telSaisi && blockedList.some(
+                    b => b.type === 'tel' && b.value === telSaisi
+                );
 
-            // ── RÉSERVATION ──────────────────────────────────────
-            const form   = document.getElementById('reservationForm');
-            const msgBox = document.getElementById('successMessage');
-
-            function showMsg(ok, text) {
-                msgBox.style.display    = 'block';
-                msgBox.style.background = ok ? '#d4edda' : '#f8d7da';
-                msgBox.style.color      = ok ? '#155724'  : '#721c24';
-                msgBox.textContent      = text;
-                setTimeout(() => { msgBox.style.display = 'none'; }, 6000);
-            }
-
-            form.addEventListener('submit', async e => {
-                e.preventDefault();
-                const btn  = form.querySelector('button[type="submit"]');
-                const orig = btn.textContent;
-                btn.textContent = 'Envoi en cours…';
-                btn.disabled    = true;
-
-                const emailSaisi = document.getElementById('email').value.trim();
-                const telSaisi   = document.getElementById('telephone').value.trim();
-
-                try {
-                    // 1. Vérification blocage
-                    const blockedSnap = await getDocs(collection(db, 'blocked'));
-                    const blockedList = blockedSnap.docs.map(d => d.data());
-
-                    const emailBloque = emailSaisi && blockedList.some(
-                        b => b.type === 'email' && b.value.toLowerCase() === emailSaisi.toLowerCase()
-                    );
-                    const telBloque = telSaisi && blockedList.some(
-                        b => b.type === 'tel' && b.value === telSaisi
-                    );
-
-                    if (emailBloque || telBloque) {
-                        showMsg(false, '❌ Nous ne pouvons pas accepter cette réservation. Contactez-nous directement.');
-                        btn.textContent = orig;
-                        btn.disabled    = false;
-                        return;
-                    }
-
-                    // 2. Sauvegarde Firestore
-                    const reservation = {
-                        nom:       document.getElementById('nom').value.trim(),
-                        email:     emailSaisi,
-                        date:      document.getElementById('date').value,
-                        heure:     document.getElementById('heure').value,
-                        personnes: document.getElementById('personnes').value,
-                        telephone: telSaisi || 'Non renseigné',
-                        message:   document.getElementById('message').value.trim() || 'Aucun message',
-                        statut:    'en_attente',
-                        origine:   'site',
-                        createdAt: new Date().toISOString(),
-                    };
-                    await addDoc(collection(db, 'reservations'), reservation);
-
-                    // 3. Succès
-                    form.reset();
-                    document.getElementById('resa-popup-overlay').classList.add('open');
-
-                    // 4. Email restaurateur (silencieux si échec)
-                    sendEmail(EMAILJS_TEMPLATE, {
-                        to_email: EMAILJS_DEST,
-                        ...reservation,
-                    }).catch(err => console.warn('Email non envoyé:', err));
-
-                } catch (err) {
-                    console.error('Erreur réservation:', err);
-                    showMsg(false, '❌ Une erreur est survenue. Veuillez nous appeler directement.');
-                } finally {
+                if (emailBloque || telBloque) {
+                    const _C = window.RESTAURANT_CONFIG;
+                    showMsg(false, '❌ Nous ne pouvons pas accepter cette réservation. Contactez-nous au ' + (_C ? _C.contact.telephone : 'notre numéro'));
                     btn.textContent = orig;
                     btn.disabled    = false;
+                    return;
                 }
-            });
-        }
 
-        // Lancer après chargement du DOM
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
+                // ── 2. Sauvegarde Firestore ──
+                const reservation = {
+                    nom:       document.getElementById('nom').value.trim(),
+                    email:     emailSaisi,
+                    date:      document.getElementById('date').value,
+                    heure:     document.getElementById('heure').value,
+                    personnes: document.getElementById('personnes').value,
+                    telephone: telSaisi || 'Non renseigné',
+                    message:   document.getElementById('message').value.trim() || 'Aucun message',
+                    statut:    'en_attente',
+                    origine:   'site',
+                    createdAt: new Date().toISOString(),
+                };
+
+                // Si Firestore échoue → vrai catch, on affiche l'erreur
+                await addDoc(collection(db, 'reservations'), reservation);
+
+                // ── 3. Succès dès que Firestore est OK ──
+                form.reset();
+                document.getElementById('resa-popup-overlay').classList.add('open');
+
+                // ── 4. Email restaurateur — silencieux si ça échoue ──
+                const _Cmail = window.RESTAURANT_CONFIG;
+                if (_Cmail) {
+                    sendEmail(_Cmail.emailjs.template_id, {
+                        to_email: _Cmail.emailjs.destinataire,
+                        ...reservation,
+                    }).catch(err => console.warn('Email non envoyé (réservation OK):', err));
+                }
+
+            } catch (err) {
+                // Seulement si Firestore ou vérification blocage a échoué
+                console.error('Erreur réservation:', err);
+                const _Cerr = window.RESTAURANT_CONFIG;
+                showMsg(false, '❌ Une erreur est survenue. Appelez-nous au ' + (_Cerr ? _Cerr.contact.telephone : 'notre numéro'));
+            } finally {
+                btn.textContent = orig;
+                btn.disabled    = false;
+            }
+        });
     </script>
 </body>
 </html>
