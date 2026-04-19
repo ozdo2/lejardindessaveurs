@@ -7,37 +7,26 @@
     <title id="page-title">Restaurant</title>
 
     <!-- EmailJS -->
-    <!-- ⚠️ Config restaurant — DOIT être en premier -->
-    <script src="restaurant.config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
-    <!-- Google Analytics — lu depuis restaurant.config.js -->
+    <!-- Google Analytics -->
     <script>
         (function() {
+            const GA_ID = 'G-175ECPB5QL';
             function loadGA() {
-                const cfg = window.RESTAURANT_CONFIG;
-                if (!cfg || !cfg.analytics || !cfg.analytics.measurement_id) return;
-                const id = cfg.analytics.measurement_id;
-                const s  = document.createElement('script');
-                s.src    = 'https://www.googletagmanager.com/gtag/js?id=' + id;
-                s.async  = true;
+                const s = document.createElement('script');
+                s.src   = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+                s.async = true;
                 document.head.appendChild(s);
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){ dataLayer.push(arguments); }
                 window.gtag = gtag;
                 gtag('js', new Date());
-                gtag('config', id);
+                gtag('config', GA_ID);
             }
-            // Respecter le consentement cookie si activé dans la config
             document.addEventListener('DOMContentLoaded', function() {
-                const cfg = window.RESTAURANT_CONFIG;
-                const respecter = cfg && cfg.analytics && cfg.analytics.respecter_consentement;
-                if (respecter) {
-                    if (localStorage.getItem('ljs_cookies_consent') === 'accepted') loadGA();
-                    window.addEventListener('cookiesAccepted', loadGA);
-                } else {
-                    loadGA();
-                }
+                if (localStorage.getItem('ljs_cookies_consent') === 'accepted') loadGA();
+                window.addEventListener('cookiesAccepted', loadGA);
             });
         })();
     </script>
@@ -950,6 +939,9 @@
     })();
     </script>
 
+    <!-- Config restaurant pour le moteur principal -->
+    <script src="restaurant.config.js"></script>
+
     <!-- Bannière cookie RGPD + styles légaux -->
     <link rel="stylesheet" href="legal.css">
     <script src="cookie-banner.js"></script>
@@ -962,29 +954,33 @@
         import { getFirestore, collection, addDoc, getDocs, onSnapshot, orderBy, query }
             from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-        // ── Attendre que la config et le DOM soient prêts ──
         async function init() {
-            // Attendre que RESTAURANT_CONFIG soit disponible (max 3s)
-            let attempts = 0;
-            while (!window.RESTAURANT_CONFIG && attempts < 30) {
-                await new Promise(r => setTimeout(r, 100));
-                attempts++;
-            }
-            if (!window.RESTAURANT_CONFIG) {
-                console.error('RESTAURANT_CONFIG non disponible');
-                return;
-            }
+            // Firebase credentials en dur — indépendant de restaurant.config.js
+            const FIREBASE_CONFIG = {
+                apiKey:            "AIzaSyDMC9RPVIH2kHc3brvB9dR6TTEbBaaXxsg",
+                authDomain:        "le-jardin-des-saveurs-630bf.firebaseapp.com",
+                projectId:         "le-jardin-des-saveurs-630bf",
+                storageBucket:     "le-jardin-des-saveurs-630bf.firebasestorage.app",
+                messagingSenderId: "965407064324",
+                appId:             "1:965407064324:web:aa9a447fa94a19c69b5051",
+            };
+            const EMAILJS_SERVICE  = "service_uqqrt7m";
+            const EMAILJS_TEMPLATE = "template_0e9bc1m";
+            const EMAILJS_KEY      = "9cbH8LkCwz3dX1YKP";
+            const EMAILJS_DEST     = "l41205761@gmail.com";
 
-            const C   = window.RESTAURANT_CONFIG;
-            const app = initializeApp(C.firebase);
+            const app = initializeApp(FIREBASE_CONFIG);
             const db  = getFirestore(app);
+
+            // Lire la config restaurant pour les infos affichées (téléphone etc.)
+            const C = window.RESTAURANT_CONFIG || {};
 
             // ── EmailJS via fetch direct ──────────────────────────
             async function sendEmail(templateId, params) {
                 const payload = {
-                    service_id:      C.emailjs.service_id,
+                    service_id:      EMAILJS_SERVICE,
                     template_id:     templateId,
-                    user_id:         C.emailjs.public_key,
+                    user_id:         EMAILJS_KEY,
                     template_params: params,
                 };
                 const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
@@ -1057,7 +1053,7 @@
                     );
 
                     if (emailBloque || telBloque) {
-                        showMsg(false, '❌ Nous ne pouvons pas accepter cette réservation. Contactez-nous au ' + C.contact.telephone);
+                        showMsg(false, '❌ Nous ne pouvons pas accepter cette réservation. Contactez-nous directement.');
                         btn.textContent = orig;
                         btn.disabled    = false;
                         return;
@@ -1083,14 +1079,14 @@
                     document.getElementById('resa-popup-overlay').classList.add('open');
 
                     // 4. Email restaurateur (silencieux si échec)
-                    sendEmail(C.emailjs.template_restaurateur || C.emailjs.template_id, {
-                        to_email: C.emailjs.email_restaurateur || C.emailjs.destinataire,
+                    sendEmail(EMAILJS_TEMPLATE, {
+                        to_email: EMAILJS_DEST,
                         ...reservation,
                     }).catch(err => console.warn('Email non envoyé:', err));
 
                 } catch (err) {
                     console.error('Erreur réservation:', err);
-                    showMsg(false, '❌ Une erreur est survenue. Appelez-nous au ' + C.contact.telephone);
+                    showMsg(false, '❌ Une erreur est survenue. Veuillez nous appeler directement.');
                 } finally {
                     btn.textContent = orig;
                     btn.disabled    = false;
