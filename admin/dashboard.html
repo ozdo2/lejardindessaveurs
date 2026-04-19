@@ -7,8 +7,6 @@
     <title>Dashboard — Administration</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <!-- Config restaurant — doit être chargée avant le module Firebase -->
-    <script src="../restaurant.config.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Jost:wght@300;400;500;600&display=swap');
 
@@ -394,32 +392,22 @@ import { getFirestore, collection, onSnapshot, doc,
          addDoc, updateDoc, deleteDoc, orderBy, query, setDoc, getDocs }
     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-// Config restaurant
-const _CFG     = window.RESTAURANT_CONFIG;
-const app      = initializeApp(_CFG.firebase);
-const auth     = getAuth(app);
-const db       = getFirestore(app);
+const app  = initializeApp({
+    apiKey:"AIzaSyDMC9RPVIH2kHc3brvB9dR6TTEbBaaXxsg",
+    authDomain:"le-jardin-des-saveurs-630bf.firebaseapp.com",
+    projectId:"le-jardin-des-saveurs-630bf",
+    storageBucket:"le-jardin-des-saveurs-630bf.firebasestorage.app",
+    messagingSenderId:"965407064324",
+    appId:"1:965407064324:web:aa9a447fa94a19c69b5051"
+});
+const auth = getAuth(app);
+const db   = getFirestore(app);
 
-const SVC_ID   = _CFG.emailjs.service_id;
-const TPL_CONF = _CFG.emailjs.template_client || _CFG.emailjs.template_id || '';
-const REST_TEL  = _CFG.contact.telephone;
-const REST_ADDR = _CFG.contact.adresse_ligne1 + ', ' + _CFG.contact.adresse_ligne2;
-
-// EmailJS via fetch direct (évite les problèmes de scope module ES)
-async function sendEmailDashboard(templateId, params) {
-    try {
-        await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                service_id:      _CFG.emailjs.service_id,
-                template_id:     templateId,
-                user_id:         _CFG.emailjs.public_key,
-                template_params: params,
-            }),
-        });
-    } catch(e) { console.warn('Email dashboard:', e); }
-}
+emailjs.init("9cbH8LkCwz3dX1YKP");
+const SVC_ID   = "service_uqqrt7m";
+const TPL_CONF = "template_c50bmdp";
+const REST_TEL  = "+33 1 42 34 56 78";
+const REST_ADDR = "42 Avenue des Gourmets, 75001 Paris";
 
 // AUTH GUARD
 onAuthStateChanged(auth, u => {
@@ -546,11 +534,11 @@ window.qConfirm = async function(id) {
 };
 
 function sendConfirm(r) {
-    sendEmailDashboard(TPL_CONF, {
+    emailjs.send(SVC_ID,TPL_CONF,{
         client_email:r.email, client_nom:r.nom,
         date:fmtDate(r.date), heure:r.heure||'—',
         personnes:r.personnes, adresse:REST_ADDR, telephone:REST_TEL
-    });
+    }).catch(e=>console.warn('Email:',e));
 }
 
 // ── PRIX ──
