@@ -785,7 +785,8 @@
         emailjs.init(C.emailjs.public_key);
 
         /* ── Date minimum formulaire ── */
-        document.getElementById('date').setAttribute('min', new Date().toISOString().split('T')[0]);
+        const dateInput = document.getElementById('date');
+            dateInput.setAttribute('min', new Date().toISOString().split('T')[0]);
 
             // ── Validation horaires d'ouverture ──
             const heureInput = document.getElementById('heure');
