@@ -1009,7 +1009,8 @@
          ═══════════════════════════════════════════════════════ -->
     <script type="module">
         import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs, onSnapshot, orderBy, query }
+        import { getFirestore, initializeFirestore, memoryLocalCache,
+                 collection, addDoc, getDocs, onSnapshot, orderBy, query }
             from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         const app = initializeApp({
@@ -1020,7 +1021,8 @@
             messagingSenderId: "965407064324",
             appId:             "1:965407064324:web:aa9a447fa94a19c69b5051",
         });
-        const db = getFirestore(app);
+        // Cache mémoire uniquement — fonctionne sans cookies ni IndexedDB
+        const db = initializeFirestore(app, { localCache: memoryLocalCache() });
 
         // ── EmailJS — appel fetch direct, zéro dépendance SDK ──
         const EMAILJS_SERVICE = "service_uqqrt7m";
