@@ -4,7 +4,21 @@
     { "source": "/admin/dashboard",        "destination": "/admin/dashboard.html"        },
     { "source": "/mentions-legales",       "destination": "/mentions-legales.html"       },
     { "source": "/confidentialite",        "destination": "/confidentialite.html"        },
-    { "source": "/cookies",               "destination": "/cookies.html"                },
+    { "source": "/cookies",                "destination": "/cookies.html"                },
     { "source": "/conditions-reservation", "destination": "/conditions-reservation.html" }
+  ],
+  "headers": [
+    {
+      "source": "/restaurant.config.js",
+      "headers": [{ "key": "Content-Type", "value": "application/javascript" }]
+    },
+    {
+      "source": "/cookie-banner.js",
+      "headers": [{ "key": "Content-Type", "value": "application/javascript" }]
+    },
+    {
+      "source": "/firebase.js",
+      "headers": [{ "key": "Content-Type", "value": "application/javascript" }]
+    }
   ]
 }
