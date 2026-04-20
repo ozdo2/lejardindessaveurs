@@ -21,7 +21,7 @@
         banner.innerHTML = `
             <div class="cookie-text">
                 <strong>🍪 Ce site utilise des cookies</strong><br>
-                Nous utilisons des cookies essentiels pour le bon fonctionnement du site.
+                Nous utilisons des cookies essentiels pour le fonctionnement du site (réservations).
                 En cliquant sur « Accepter », vous consentez également à Google Analytics (mesure d'audience).
                 <a href="/cookies" target="_blank">En savoir plus</a>
             </div>
