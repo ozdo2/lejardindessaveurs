@@ -256,6 +256,45 @@ const RESTAURANT_CONFIG = {
     ],
 
     // ─────────────────────────────────────────────
+    // 12. AVIS CLIENTS (extraits de Google Maps)
+    // note : de 1 à 5 étoiles
+    // Laissez le tableau vide [] pour masquer la section
+    // ─────────────────────────────────────────────
+    avis_clients: [
+        {
+            auteur: "Marie L.",
+            note:   5,
+            date:   "il y a 2 semaines",
+            texte:  "Une expérience gastronomique exceptionnelle. Le foie gras maison était divin, et le service irréprochable. On reviendra sans hésiter !",
+        },
+        {
+            auteur: "Thomas B.",
+            note:   5,
+            date:   "il y a 1 mois",
+            texte:  "Cadre magnifique, cuisine raffinée et personnel aux petits soins. Le magret de canard était parfaitement cuit. Un vrai moment de bonheur.",
+        },
+        {
+            auteur: "Sophie M.",
+            note:   4,
+            date:   "il y a 3 semaines",
+            texte:  "Excellent restaurant gastronomique. Les produits sont frais et travaillés avec soin. Je recommande vivement la soirée jazz du vendredi !",
+        },
+    ],
+
+    // ─────────────────────────────────────────────
+    // 13. MOYENS DE PAIEMENT ACCEPTÉS
+    // Ajoutez ou retirez selon les modes acceptés
+    // ─────────────────────────────────────────────
+    paiements: [
+        { icone: "💳", label: "Carte bancaire"   },
+        { icone: "💶", label: "Espèces"          },
+        { icone: "📱", label: "Apple Pay"        },
+        { icone: "📱", label: "Google Pay"       },
+        { icone: "🏷️", label: "Tickets restaurant" },
+        { icone: "💳", label: "American Express" },
+    ],
+
+    // ─────────────────────────────────────────────
     // 14. EMAILJS (envoi des réservations)
     // ─────────────────────────────────────────────
     emailjs: {
