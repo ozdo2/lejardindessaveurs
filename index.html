@@ -338,6 +338,44 @@
         .footer-bottom { text-align: center; padding-top: 2rem; border-top: 1px solid #333; color: #aaa; }
 
         /* ─────────────────────────────────────────────────────────
+           AVIS CLIENTS
+           ───────────────────────────────────────────────────────── */
+        .avis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+        .avis-card {
+            background: white; border-radius: 12px; padding: 1.75rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--accent-color);
+            transition: transform 0.3s;
+        }
+        .avis-card:hover { transform: translateY(-4px); }
+        .avis-etoiles { color: #f4c430; font-size: 1.1rem; margin-bottom: 0.75rem; letter-spacing: 2px; }
+        .avis-texte { color: #444; font-size: 0.95rem; line-height: 1.7; font-style: italic; margin-bottom: 1rem; }
+        .avis-auteur { display: flex; align-items: center; gap: 0.75rem; }
+        .avis-avatar {
+            width: 42px; height: 42px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold; font-size: 1rem; flex-shrink: 0;
+        }
+        .avis-nom { font-weight: 600; color: var(--text-dark); font-size: 0.9rem; }
+        .avis-source { font-size: 0.78rem; color: #999; }
+        .avis-google-logo { font-size: 0.75rem; color: #4285F4; font-weight: 600; }
+
+        /* ─────────────────────────────────────────────────────────
+           MOYENS DE PAIEMENT
+           ───────────────────────────────────────────────────────── */
+        .paiement-section { background: var(--light-bg); text-align: center; padding: 3rem 2rem; }
+        .paiement-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
+        .paiement-badge {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: white; border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 0.6rem 1.2rem;
+            font-size: 0.9rem; color: var(--text-dark);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .paiement-badge .p-icon { font-size: 1.3rem; }
+
+        /* ─────────────────────────────────────────────────────────
            CAROUSEL
            ───────────────────────────────────────────────────────── */
         .image-carousel { width: 100%; overflow: hidden; background: var(--light-bg); padding: 3rem 0; }
@@ -618,6 +656,23 @@
             <h2 class="section-title">Suivez-nous</h2>
             <p class="section-subtitle">Rejoignez notre communauté et découvrez nos actualités</p>
             <div class="social-links" id="social-links"></div>
+        </div>
+    </section>
+
+    <!-- ── AVIS CLIENTS ───────────────────────────────────── -->
+    <section id="avis">
+        <div class="container">
+            <h2 class="section-title">Ce que disent nos clients</h2>
+            <p class="section-subtitle">Avis vérifiés Google</p>
+            <div class="avis-grid" id="avis-grid"></div>
+        </div>
+    </section>
+
+    <!-- ── MOYENS DE PAIEMENT ──────────────────────────────── -->
+    <section class="paiement-section">
+        <div class="container">
+            <h2 class="section-title">Moyens de paiement acceptés</h2>
+            <div class="paiement-grid" id="paiement-grid"></div>
         </div>
     </section>
 
@@ -922,7 +977,45 @@
         document.getElementById('footer-contact').innerHTML =
             `📞 ${C.contact.telephone}<br>✉️ ${C.contact.email}<br>📍 ${C.contact.adresse_ligne1}<br>${C.contact.adresse_ligne2}<br><br>${formatHoraires(C.horaires)}`;
         document.getElementById('footer-copyright').textContent =
-            `© ${new Date().getFullYear()} ${C.identite.nom}. Tous droits réservés. | Réalisé avec passion`;
+            `© ${new Date().getFullYear()} ${C.identite.nom}. Tous droits réservés. | Réalisé par Savoris`;
+
+        /* ── Avis clients ── */
+        const avisGrid = document.getElementById('avis-grid');
+        if (C.avis_clients && C.avis_clients.length) {
+            C.avis_clients.forEach(avis => {
+                const etoiles = '★'.repeat(avis.note) + '☆'.repeat(5 - avis.note);
+                const initiale = avis.auteur.charAt(0).toUpperCase();
+                avisGrid.innerHTML += `
+                    <div class="avis-card">
+                        <div class="avis-etoiles">${etoiles}</div>
+                        <p class="avis-texte">"${avis.texte}"</p>
+                        <div class="avis-auteur">
+                            <div class="avis-avatar">${initiale}</div>
+                            <div>
+                                <div class="avis-nom">${avis.auteur}</div>
+                                <div class="avis-source"><span class="avis-google-logo">G</span> Google · ${avis.date}</div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        } else if (avisGrid) {
+            avisGrid.style.display = 'none';
+            avisGrid.closest('section').style.display = 'none';
+        }
+
+        /* ── Moyens de paiement ── */
+        const paiementGrid = document.getElementById('paiement-grid');
+        if (C.paiements && C.paiements.length) {
+            C.paiements.forEach(p => {
+                paiementGrid.innerHTML += `
+                    <div class="paiement-badge">
+                        <span class="p-icon">${p.icone}</span>
+                        <span>${p.label}</span>
+                    </div>`;
+            });
+        } else if (paiementGrid) {
+            paiementGrid.closest('section').style.display = 'none';
+        }
 
         /* ── Helper horaires (même format partout) ── */
         function formatHoraires(horaires) {
